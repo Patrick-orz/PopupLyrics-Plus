@@ -2,15 +2,11 @@
 /// <reference types="react" />
 /// <reference path="../../globals.d.ts" />
 
-//MODDED on line 750
-
 /** @type {React} */
 const react = Spicetify.React;
 const { useState, useEffect, useCallback, useMemo, useRef } = react;
 /** @type {import("react").ReactDOM} */
 const reactDOM = Spicetify.ReactDOM;
-
-let lpl = [0];//lyrics+ storage
 
 const {
 	URI,
@@ -728,12 +724,6 @@ class LyricsContainer extends react.Component {
 
 		const hasTranslation = this.state.neteaseTranslation !== null || this.state.musixmatchTranslation !== null;
 
-		if(mode !== SYNCED || !this.state.synced){//no Synced
-			localStorage.setItem("lyricsPlusLyrics", "No lyrics");//用localStorage共享
-			const event = new Event('lyricsUpdate');
-			Spicetify.Player.dispatchEvent(event);
-		}
-
 		if (mode !== -1) {
 			this.lyricsSource(mode);
 			const language = this.provideLanguageCode(this.state.currentLyrics);
@@ -756,24 +746,6 @@ class LyricsContainer extends react.Component {
 					provider: this.state.provider,
 					copyright: this.state.copyright
 				});
-
-
-				let tempL = CONFIG.visual["translate"] && translatedLyrics ? translatedLyrics : this.state.currentLyrics;
-				if (tempL[0] && typeof tempL[0].text === 'string') {
-				//检测歌词是否“未加密”
-
-					if(JSON.stringify(tempL)!==JSON.stringify(lpl)){
-						//新歌词
-						lpl=tempL;
-
-						console.log('Lyrics text:', lpl);
-
-						localStorage.setItem("lyricsPlusLyrics", JSON.stringify(lpl));//用localStorage共享						
-						// console.log("event");
-					}
-				}
-				const event = new Event('lyricsUpdate');
-				Spicetify.Player.dispatchEvent(event);
 			} else if (mode === UNSYNCED && this.state.unsynced) {
 				activeItem = react.createElement(UnsyncedLyricsPage, {
 					trackUri: this.state.uri,
