@@ -78,6 +78,17 @@ const KaraokeLine = ({ text, isActive, position, startTime }) => {
 };
 
 const SyncedLyricsPage = react.memo(({ lyrics = [], provider, copyright, isKara }) => {
+
+	// console.log(lyrics);
+
+	/*
+	if (lyrics[0] && typeof lyrics[0].text === 'string') {//记录“未加密”歌词
+		console.log('Lyrics text:', lyrics);
+
+		localStorage.setItem("lyricsPlusLyrics", lyrics);//用localStorage共享
+	}
+	*/
+
 	const [position, setPosition] = useState(0);
 	const activeLineEle = useRef();
 	const lyricContainerEle = useRef();
@@ -716,3 +727,12 @@ const VersionSelector = react.memo(({ items, index, callback }) => {
 		)
 	);
 });
+/*
+
+var App = {
+	lyricsPlus: lp
+};
+
+module.exports = App;
+//导出到 popupLyrics
+*/
