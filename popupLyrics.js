@@ -1,14 +1,9 @@
 // NAME: Popup Lyrics
 // AUTHOR: khanhas
-
-// MODDED: Patrick-orz
-
-// Netease API parser and UI from https://github.com/mantou132/Spotify-Lyrics
+//         Netease API parser and UI from https://github.com/mantou132/Spotify-Lyrics
 // DESCRIPTION: Pop lyrics up
 
-// MOD: Make lyrics-plus synced lyrics be a source
-
-// / <reference path="../globals.d.ts" />
+/// <reference path="../globals.d.ts" />
 
 if (!navigator.serviceWorker) {
 	// Worker code
@@ -17,7 +12,7 @@ if (!navigator.serviceWorker) {
 	// Offload setInterval to a Worker to consistently call tick function.
 	let num = null;
 	onmessage = function (event) {
-		if (event.data === "popup-lyric-request-update") { 
+		if (event.data === "popup-lyric-request-update") {
 			console.warn("popup-lyric-request-update");
 			num = setInterval(() => postMessage("popup-lyric-update-ui"), 8);
 		} else if (event.data === "popup-lyric-stop-update") {
@@ -80,33 +75,7 @@ function PopupLyrics() {
 		static capitalize(s) {
 			return s.replace(/^(\w)/, $1 => $1.toUpperCase());
 		}
-
-		static waitForLocalStorage(key, cb, timer) {//wait for local storage to have a value
-			if ( ! localStorage.getItem( key ) ) {
-				return timer = setTimeout(
-					waitForLocalStorage.bind( null, key, cb ),
-					100
-				);
-			}
-			clearTimeout( timer );
-			if ( typeof cb !== 'function' ) {
-				return localStorage.getItem( key );
-			}
-			return cb( localStorage.getItem( key ) );
-		}
-
-		static asyncLocalStorage = {
-		    async setItem(key, value) {
-		        await null;
-		        return localStorage.setItem(key, value);
-		    },
-		    async getItem(key) {
-		        await null;
-		        return localStorage.getItem(key);
-		    }
-		};
 	}
-
 
 	class LyricProviders {
 		/** Netease PyNCM API
@@ -139,52 +108,6 @@ function PopupLyrics() {
 		 * }} NeteaseLyric
 		 */
 
-		static async fetchLyricsPlus(info) {//拾取LyricsPlus歌词
-
-			// console.log(lpl);
-			let lyrics;
-
-			if(firstOpen){
-				firstOpen=false;
-			}else{
-				await new Promise((resolve) => {
-					Spicetify.Player.addEventListener('lyricsUpdate', () => {
-						resolve();
-					});
-				});
-			}
-
-			if(LyricUtils.asyncLocalStorage.getItem("lyricsPlusLyrics")!="No lyrics"){//更新完毕
-				console.log("hello");
-				/*
-				const lyrics = JSON.parse(localStorage.getItem("lyricsPlusLyrics")).map(line => ({
-					text: line.text || "♪",
-					startTime: line.startTime / 1000
-				}));
-				//转换成popupLyrics所需要的形式
-				*/
-
-				lyrics = JSON.parse(localStorage.getItem("lyricsPlusLyrics"));
-				for(let i=0;i<lyrics.length;i++){
-					// console.log(lpl[i].startTime);
-					// console.log(lpl[i].text);
-					lyrics[i].startTime /= 1000;//转换成popupLyrics所需要的形式	
-				}
-
-				// console.log(lpl);
-				console.log("bye");
-				// localStorage.removeItem("lyricsPlusLyrics");
-			}else{
-				console.log("No available lyrics");
-				// localStorage.removeItem("lyricsPlusLyrics");
-				return { error: "No lyrics" };	
-			}
-
-			console.log(lyrics);
-			console.log("sent");
-			return {lyrics};
-		}
-
 		static async fetchSpotify(info) {
 			const baseURL = "wg://lyrics/v1/track/";
 			const id = info.uri.split(":")[2];
@@ -200,7 +123,6 @@ function PopupLyrics() {
 				text: a.words.map(b => b.string).join(" ")
 			}));
 
-			console.log(lyrics);
 			return { lyrics };
 		}
 
@@ -369,11 +291,6 @@ function PopupLyrics() {
 		ratio: LocalStorage.get("popup-lyrics:ratio") || "11",
 		delay: Number(LocalStorage.get("popup-lyrics:delay")),
 		services: {
-			lyricsplus: {//新增lyrics plus选项
-				on: boolLocalStorage("popup-lyrics:services:lyrics_plus:on"),
-				call: LyricProviders.fetchLyricsPlus,
-				desc: `Use synced lyrics from lyrics+ custom app.`
-			},
 			netease: {
 				on: boolLocalStorage("popup-lyrics:services:netease:on"),
 				call: LyricProviders.fetchNetease,
@@ -433,13 +350,7 @@ function PopupLyrics() {
 	}
 
 	let lyricVideoIsOpen = false;
-	let firstOpen = false;
 	lyricVideo.onenterpictureinpicture = () => {
-		console.log("OPEN");
-		firstOpen=true;
-		// const event = new Event('lyricsUpdate');//打开时fetchLyrics+
-		// Spicetify.Player.dispatchEvent(event);
-
 		lyricVideo.play();
 		lyricVideoIsOpen = true;
 		tick(userConfigs);
@@ -829,7 +740,7 @@ function PopupLyrics() {
 			if (error === "Instrumental") {
 				drawText(lyricCtx, error);
 			} else {
-				drawText(lyricCtx, error, "#FFFFFF");//把错误（无歌词等）改成温和蓝色
+				drawText(lyricCtx, error, "red");
 			}
 		} else if (!lyrics) {
 			drawText(lyricCtx, "No lyrics");
