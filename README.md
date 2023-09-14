@@ -13,6 +13,7 @@
 - A more powerful translator (English, Romaji)
 - More options in display
 - Online API deployment (Vercel)
+
 See [the roadmap](https://github.com/Patrick-orz/PopupLyrics-Plus/projects?query=is%3Aopen) for more information.
 ## Dependencies
 ### [Spicetify](https://github.com/spicetify/spicetify-cli)
