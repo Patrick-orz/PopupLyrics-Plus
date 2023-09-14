@@ -41,10 +41,22 @@ node app.js
 The server has to be running at http://localhost:3000 (the default port) when using the extensions and apps, don't close it!
 
 ## Installation
-Download popupLyrics.js from this repo (not from /Archive!!), and place into the Spicetify Extensions folder.
+Download popupLyrics.js and the lyrics-plus folder from this repo (not from /Archive!!), and place into the Spicetify Extensions/customApps directory, respectively.
 
 Spicetify path are below.
 |Platform|Path|
 ---------|-----
 |Windows|%appdata%\spicetify\|
 |Linux/MacOS|~/.config/spicetify|
+
+## Usage
+After hosting the API locally at http://localhost:3000, check the NeteaseCN service to enable it.
+
+<img width="382" alt="Screen Shot 2023-09-14 at 11 50 25 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/f0615ed0-1092-4a1f-bb91-ae936a1d67fd">
+
+Translation options can be changed in the Options section (needs to close and reopen PopupLyrics for it to take effect
+
+<img width="389" alt="Screen Shot 2023-09-14 at 11 51 25 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/9bafe94e-bbc2-4b01-83ef-dd0a8c806922">
+
+## Inspiration
+[misaka10843/spicetify-popupLyrics-CN](https://github.com/misaka10843/spicetify-popupLyrics-CN)
