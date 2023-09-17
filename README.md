@@ -1,5 +1,5 @@
 # PopupLyrics-Plus
-### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) and [Lyrics-Plus](https://github.com/spicetify/spicetify-cli/blob/master/Extensions/popupLyrics.js) to enable more functionalities!
+### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable more functionalities! 拥有更多功能的PopupLyrics~
 ![ogLyrics pic](https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/a51be58d-a653-43f6-bd4a-142f120410fe)
 *Original Lyrics Plus compared to modded PopupLyrics (without translations)*
 
@@ -7,10 +7,11 @@
 *Original Lyrics Plus compared to modded PopupLyrics (with translations)*
 
 ## Features
-- Way more stable [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work (Currently only implemented in PopupLyrics)
-- PopupLyrics Netease Chinese lyrics translation
+- Way more stable [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
+- Netease Chinese lyrics translation
+- English translation through google translate (a bit slow)
+- Romaji translation
 ## Work in Progress
-- A more powerful translator (English, Romaji)
 - More options in display
 - Online API deployment (Vercel)
 
@@ -36,13 +37,14 @@ cd NeteaseCloudMusicApi
 npm install
 ```
 #### Hosting
+In the NeteaseCloudMusicApi directory: 
 ```
 node app.js
 ```
 The server has to be running at http://localhost:3000 (the default port) when using the extensions and apps, don't close it!
 
 ## Installation
-Download popupLyrics.js and the lyrics-plus folder from this repo (not from /Archive!!), and place into the Spicetify Extensions/customApps directory, respectively.
+Download popupLyrics.js from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
 
 Spicetify path are below.
 |Platform|Path|
