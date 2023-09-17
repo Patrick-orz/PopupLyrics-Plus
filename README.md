@@ -1,21 +1,25 @@
 # PopupLyrics-Plus
 ### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
 <img width="751" alt="Screen Shot 2023-09-16 at 11 46 37 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/ab072cb7-dbd9-48b2-a65d-10b50bd3949c">
+  
 *Chinese translation*
 
 <img width="751" alt="Screen Shot 2023-09-16 at 11 46 23 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/20868246-8933-4e9c-b22d-821202607b05">
+
 *English translation*
 
 <img width="751" alt="Screen Shot 2023-09-16 at 11 45 51 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/b1ad870e-514b-4dae-8a53-74cca70aae88">
+
 *Romaji translation*
 
 <img width="751" alt="Screen Shot 2023-09-16 at 11 45 19 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/85f4ac26-9c5e-446e-96bb-10867a6f762f">
+
 *Original*
 
 ## Features
 - Way more stable [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
 - Netease Chinese lyrics translation
-- English translation through google translate (a bit slow)
+- English translation through [SimplyTranslate Web](https://codeberg.org/SimpleWeb/SimplyTranslate-Web) (a bit slow)
 - Romaji translation
 ## Work in Progress
 - More options in display
@@ -47,7 +51,7 @@ In the NeteaseCloudMusicApi directory:
 ```
 node app.js
 ```
-The server has to be running at http://localhost:3000 (the default port) when using the extensions and apps, don't close it!
+The server has to be running at http://localhost:3000 (the default port) when using the extension, don't close it!
 
 ## Installation
 Download popupLyrics.js from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
@@ -59,13 +63,17 @@ Spicetify path are below.
 |Linux/MacOS|~/.config/spicetify|
 
 ## Usage
-After hosting the API locally at http://localhost:3000, check the NeteaseCN service to enable it.
+Host the Netease API locally at http://localhost:3000.
 
-<img width="382" alt="Screen Shot 2023-09-14 at 11 50 25 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/f0615ed0-1092-4a1f-bb91-ae936a1d67fd">
+**Have NeteaseCN service at the top to have the best experience!**
 
-Translation options can be changed in the Options section (needs to close and reopen PopupLyrics for it to take effect
+<img width="401" alt="Screen Shot 2023-09-16 at 11 53 21 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/32c4690a-3cde-4d72-b65b-61ca9bcfb49b">
 
-<img width="389" alt="Screen Shot 2023-09-14 at 11 51 25 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/9bafe94e-bbc2-4b01-83ef-dd0a8c806922">
+Translation options can be changed in the Options section
 
-## Inspiration
+<img width="389" alt="Screen Shot 2023-09-16 at 11 53 55 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/f9946baa-4158-4a1d-a22c-a4bd8d691be8">
+
+## Inspiration & Words
 [misaka10843/spicetify-popupLyrics-CN](https://github.com/misaka10843/spicetify-popupLyrics-CN)
+
+Don't heisitate to start an issue if you run into any problems!
