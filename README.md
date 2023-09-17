@@ -1,5 +1,5 @@
 # PopupLyrics-Plus
-### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable more functionalities! 拥有更多功能的PopupLyrics~
+### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
 ![ogLyrics pic](https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/a51be58d-a653-43f6-bd4a-142f120410fe)
 *Original Lyrics Plus compared to modded PopupLyrics (without translations)*
 
