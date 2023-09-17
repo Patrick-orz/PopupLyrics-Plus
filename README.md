@@ -62,6 +62,13 @@ Spicetify path are below.
 |Windows|%appdata%\spicetify\|
 |Linux/MacOS|~/.config/spicetify|
 
+Push extension into Spicetify and apply
+
+```
+spicetify config extensions popuplyrics.js
+spicetify apply
+```
+
 ## Usage
 Host the Netease API locally at http://localhost:3000.
 
