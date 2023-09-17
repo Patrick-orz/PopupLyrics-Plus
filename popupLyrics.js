@@ -9,6 +9,8 @@
 
 /// <reference path="../globals.d.ts" />
 
+// const translate = setCORS("http://cors-anywhere.herokuapp.com/");
+
 if (!navigator.serviceWorker) {
 	// Worker code
 	// When Spotify client is minimised, requestAnimationFrame does not call our tick function
@@ -51,12 +53,15 @@ function PopupLyrics() {
 
 	const dictPath = "https:/cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict";
 
-	class Translator {
+	const googleTranslatePath = "https://cdn.jsdelivr.net/npm/@iamtraction/google-translate@2.0.1/src/index.min.js";
+
+	class overallTranslator {
 		constructor(lang) {
 			this.finished = {
 				ja: false,
 				ko: false,
-				zh: false
+				zh: false,
+				en: false
 			};
 
 			this.applyKuromojiFix();
@@ -86,6 +91,7 @@ function PopupLyrics() {
 					this.includeExternal(openCCPath);
 					break;
 			}
+			
 		}
 
 		/**
@@ -109,7 +115,7 @@ function PopupLyrics() {
 				case "ja":
 					if (this.kuroshiro) return;
 					if (typeof Kuroshiro === "undefined" || typeof KuromojiAnalyzer === "undefined") {
-						await Translator.#sleep(50);
+						await overallTranslator.#sleep(50);
 						return this.createTranslator(lang);
 					}
 
@@ -124,7 +130,7 @@ function PopupLyrics() {
 				case "ko":
 					if (this.Aromanize) return;
 					if (typeof Aromanize === "undefined") {
-						await Translator.#sleep(50);
+						await overallTranslator.#sleep(50);
 						return this.createTranslator(lang);
 					}
 
@@ -134,7 +140,7 @@ function PopupLyrics() {
 				case "zh":
 					if (this.OpenCC) return;
 					if (typeof OpenCC === "undefined") {
-						await Translator.#sleep(50);
+						await overallTranslator.#sleep(50);
 						return this.createTranslator(lang);
 					}
 
@@ -146,7 +152,7 @@ function PopupLyrics() {
 
 		async romajifyText(text, target = "romaji", mode = "spaced") {
 			if (!this.finished.ja) {
-				await Translator.#sleep(100);
+				await overallTranslator.#sleep(100);
 				return this.romajifyText(text, target, mode);
 			}
 
@@ -158,7 +164,7 @@ function PopupLyrics() {
 
 		async convertToRomaja(text, target) {
 			if (!this.finished.ko) {
-				await Translator.#sleep(100);
+				await overallTranslator.#sleep(100);
 				return this.convertToRomaja(text, target);
 			}
 
@@ -168,7 +174,7 @@ function PopupLyrics() {
 
 		async convertChinese(text, from, target) {
 			if (!this.finished.zh) {
-				await Translator.#sleep(100);
+				await overallTranslator.#sleep(100);
 				return this.convertChinese(text, from, target);
 			}
 
@@ -262,7 +268,7 @@ function PopupLyrics() {
 		static async toSimplifiedChinese(s) {
 			// create a singleton Translator instance
 			if (!LyricUtils.#translator) {
-				LyricUtils.#translator = new Translator("zh");
+				LyricUtils.#translator = new overallTranslator("zh");
 			}
 
 			// translate to Simplified Chinese
@@ -519,7 +525,7 @@ function PopupLyrics() {
 
 			const cleanTitle = LyricUtils.removeExtraInfo(LyricUtils.normalize(info.title));
 			let currentDate = new Date(); 
-			const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`)+"&timestamp="+ currentDate.getTime();
+			const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`)/*+"&timestamp="+ currentDate.getTime()*/;
 			//搜索歌曲
 
 			console.log(finalURL);
@@ -573,7 +579,7 @@ function PopupLyrics() {
 			
 			currentDate = new Date(); 
 			console.log(lyricURL + item.id + "&timestamp=" + currentDate.getTime());
-			const meta = await CosmosAsync.get(lyricURL + item.id + "&timestamp=" + currentDate.getTime());
+			const meta = await CosmosAsync.get(lyricURL + item.id/* + "&timestamp=" + currentDate.getTime()*/);
 			//fetch 歌词
 
 			console.log("Lyrics complete");
@@ -599,9 +605,13 @@ function PopupLyrics() {
 			let lines = OgLyricStr.split(/\r?\n/).map(line => line.trim());
 			const ogLyrics = lines
 				.map(line => {
-					const { time, text } = LyricUtils.parseTimestamp(line);
+					let { time, text } = LyricUtils.parseTimestamp(line);
 					if (text === "纯音乐, 请欣赏") noOgLyrics = true;
-					if (!time || !text) return null;
+					if (time === undefined){ 
+						time = text.toString().replace("[","").replace("]","");
+						text = "♪"; 
+					}
+					// console.log(time,text);
 
 					const [key, value] = time.split(":") || [];
 					const [min, sec] = [parseFloat(key), parseFloat(value)];
@@ -622,9 +632,14 @@ function PopupLyrics() {
 			lines = TLyricStr.split(/\r?\n/).map(line => line.trim());
 			const tLyrics = lines
 				.map(line => {
-					const { time, text } = LyricUtils.parseTimestamp(line);
+					let { time, text } = LyricUtils.parseTimestamp(line);
 					if (text === "纯音乐, 请欣赏") noTLyrics = true;
-					if (!time || !text) return null;
+					if (time === undefined){ 
+						time = text.toString().replace("[","").replace("]","");
+						text = "♪"; 
+					}
+					// console.log(time,text);
+
 
 					const [key, value] = time.split(":") || [];
 					const [min, sec] = [parseFloat(key), parseFloat(value)];
@@ -649,7 +664,7 @@ function PopupLyrics() {
 			}			
 
 			let lyrics;
-			if(userConfigs.prioritizeNeteaseCNTranslation)
+			if(userConfigs.translation2rd == 2)
 				lyrics=(noTLyrics||!tLyrics.length) ? ogLyrics:tLyrics;
 			else
 				lyrics=ogLyrics;
@@ -665,6 +680,7 @@ function PopupLyrics() {
 		centerAlign: boolLocalStorage("popup-lyrics:center-align"),
 		showCover: boolLocalStorage("popup-lyrics:show-cover"),
 		prioritizeNeteaseCNTranslation: boolLocalStorage("popup-lyrics:prioritize-neteaseCN-translation"),
+		translation2rd: Number(LocalStorage.get("popup-lyrics:translation-2rd")),
 		fontSize: Number(LocalStorage.get("popup-lyrics:font-size")),
 		blurSize: Number(LocalStorage.get("popup-lyrics:blur-size")),
 		fontFamily: LocalStorage.get("popup-lyrics:font-family") || "spotify-circular",
@@ -802,12 +818,75 @@ function PopupLyrics() {
 			sharedData = { lyrics: [] };
 
 			try {
-				const data = await service.call(info);
+				let data = await service.call(info);
+
+				let dataText = data.lyrics.map(lyric => lyric.text).join("\n");
+				//set up for translation
+
+				console.log(dataText);
+
+				if(userConfigs.translation2rd==3){//Romaji
+
+					const romajifyTranslator = new overallTranslator("ja");
+					console.log("runs");
+					dataText = await romajifyTranslator.romajifyText(dataText);
+					//translate
+
+					console.log(dataText);
+
+					dataText=dataText.split("\n");
+					//set up for re-format
+
+					console.log(dataText);
+					console.log(data,data.lyrics.length);
+
+					for(let i=0;i<data.lyrics.length;i++){
+
+						data.lyrics[i].text=dataText[i];
+					}
+					//re-format
+				}else if(userConfigs.translation2rd==1){//eng
+					const translateURL = "https://st.privacydev.net/api/translate/?engine=google&to=en&text=";//Use SimplyTranslate-web
+					//https://codeberg.org/SimpleWeb/SimplyTranslate-Web/src/branch/master/api.md
+
+					dataText = LyricUtils.normalize(dataText.replace(/ /g,"").replace(/\n/g,"/"));
+
+					// console.log(dataText.match(/\*/g).length);
+
+					let stringParts=[];
+					let finalString = "";
+					for(let i=0;i<dataText.length;i+=250){//Split into chunks of 250
+						console.log(dataText.slice(i, i + 250));
+						stringParts.push(encodeURIComponent(LyricUtils.normalize(dataText.slice(i, i + 250))));
+						//prevent url overflow & setup
+						console.log(stringParts[i/250]);
+
+						stringParts[i/250] = await CosmosAsync.get(translateURL + stringParts[i/250]);
+						console.log(stringParts[i/250]['translated-text']);
+						//translate
+
+						finalString += stringParts[i/250]['translated-text'];
+						//结合
+					}
+
+					finalString = finalString.split(/\//g);
+
+					console.log(finalString)
+					//翻译操作完毕
+
+					for(let i=0;i<data.lyrics.length;i++)
+						data.lyrics[i].text=finalString[i];
+					//parse back
+				}
+
 				console.log(data);
+
 				sharedData = data;
-				if (!sharedData.error) {
+
+				if(!sharedData.error){
 					return;
 				}
+				
 			} catch (err) {
 				sharedData = { error: "No lyrics" };
 			}
@@ -1238,10 +1317,23 @@ button.switch.small {
 				userConfigs.showCover = state;
 				LocalStorage.set("popup-lyrics:show-cover", String(state));
 			});
-			const prioritizeNeteaseCN = createSlider("Prioritize NeteaseCN translation", userConfigs.prioritizeNeteaseCNTranslation, state => {
+			/*
+			const prioritizeNeteaseCN = createSlider("Prioritize NeteaseCN chinese translation", userConfigs.prioritizeNeteaseCNTranslation, state => {
 				userConfigs.prioritizeNeteaseCNTranslation=state;
 				LocalStorage.set("popup-lyrics:prioritize-neteaseCN-translation", String(state));
 			});
+			*/
+			const translation2 = createOptions("Language to translate into", 
+				{
+					0: "None",
+					1: "English (Google)",
+					2: "Chinese (NeteaseCN)",
+					3: "Romaji (Kuroshiro)"
+				}, userConfigs.translation2rd, state => {
+				userConfigs.translation2rd=state;
+				LocalStorage.set("popup-lyrics:translation-2rd", state);
+				updateTrack();
+			}, true);//Have track update after modification
 			const ratio = createOptions("Aspect ratio", { 11: "1:1", 43: "4:3", 169: "16:9" }, userConfigs.ratio, state => {
 				userConfigs.ratio = state;
 				LocalStorage.set("popup-lyrics:ratio", state);
@@ -1357,7 +1449,7 @@ button.switch.small {
 			});
 			stackServiceElements();
 
-			configContainer.append(style, optionHeader, smooth, center, cover, prioritizeNeteaseCN, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
+			configContainer.append(style, optionHeader, smooth, center, cover/*, prioritizeNeteaseCN*/, translation2, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
 		}
 		Spicetify.PopupModal.display({
 			title: "Popup Lyrics",
