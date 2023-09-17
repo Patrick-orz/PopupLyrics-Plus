@@ -18,7 +18,7 @@
 See [the roadmap](https://github.com/Patrick-orz/PopupLyrics-Plus/projects?query=is%3Aopen) for more information.
 ## Dependencies
 ### [Spicetify](https://github.com/spicetify/spicetify-cli)
-The extension PopupLyrics and custom app Lyrics Plus are both based on the Spicetify-cli.
+The extension PopupLyrics is based on the Spicetify-cli.
 
 Spicetify installation steps are below (see [Spicetify docs](https://spicetify.app/docs/getting-started) for more details).
 #### Windows
