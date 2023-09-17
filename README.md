@@ -1,11 +1,16 @@
 # PopupLyrics-Plus
 ### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
 <img width="751" alt="Screen Shot 2023-09-16 at 11 42 30 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/d10c9ba1-f64d-4a56-9665-136f34385941">
+*Chinese translation*
 
-*Original Lyrics Plus compared to modded PopupLyrics (without translations)*
+<img width="745" alt="Screen Shot 2023-09-16 at 11 43 25 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/41e66378-2a0e-4ac3-b11b-b7b2d9f3739a">
+*English translation*
 
-![tLyrics pic](https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/b54682a3-43b7-4d01-b4b4-2a5473071a04)
-*Original Lyrics Plus compared to modded PopupLyrics (with translations)*
+<img width="749" alt="Screen Shot 2023-09-16 at 11 43 53 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/df73432e-2322-4196-9128-1a2122f8b2ce">
+*Romaji translation*
+
+<img width="747" alt="Screen Shot 2023-09-16 at 11 44 36 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/1c11d638-4172-47c3-9d88-67e883fd7794">
+*Original*
 
 ## Features
 - Way more stable [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
