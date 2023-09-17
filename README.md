@@ -55,7 +55,7 @@ node app.js
 The server has to be running at http://localhost:3000 (the default port) when using the extension, don't close it!
 
 ## Installation
-Download [popupLyrics.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyrics.jshttps://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyrics.js) from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
+Download [popupLyrics.js]([https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyrics.js) from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
 
 Spicetify path are below.
 |Platform|Path|
