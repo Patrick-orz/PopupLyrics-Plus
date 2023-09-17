@@ -76,4 +76,4 @@ Translation options can be changed in the Options section
 ## Inspiration & Words
 [misaka10843/spicetify-popupLyrics-CN](https://github.com/misaka10843/spicetify-popupLyrics-CN)
 
-Don't heisitate to start an issue if you run into any problems!
+Don't heisitate to start an issue if you run into any problems! (feature requests are fine as well)
