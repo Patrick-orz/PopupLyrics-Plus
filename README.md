@@ -1,15 +1,15 @@
 # PopupLyrics-Plus
 ### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
-<img width="751" alt="Screen Shot 2023-09-16 at 11 42 30 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/d10c9ba1-f64d-4a56-9665-136f34385941">
+<img width="751" alt="Screen Shot 2023-09-16 at 11 46 37 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/ab072cb7-dbd9-48b2-a65d-10b50bd3949c">
 *Chinese translation*
 
-<img width="745" alt="Screen Shot 2023-09-16 at 11 43 25 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/41e66378-2a0e-4ac3-b11b-b7b2d9f3739a">
+<img width="751" alt="Screen Shot 2023-09-16 at 11 46 23 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/20868246-8933-4e9c-b22d-821202607b05">
 *English translation*
 
-<img width="749" alt="Screen Shot 2023-09-16 at 11 43 53 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/df73432e-2322-4196-9128-1a2122f8b2ce">
+<img width="751" alt="Screen Shot 2023-09-16 at 11 45 51 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/b1ad870e-514b-4dae-8a53-74cca70aae88">
 *Romaji translation*
 
-<img width="747" alt="Screen Shot 2023-09-16 at 11 44 36 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/1c11d638-4172-47c3-9d88-67e883fd7794">
+<img width="751" alt="Screen Shot 2023-09-16 at 11 45 19 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/85f4ac26-9c5e-446e-96bb-10867a6f762f">
 *Original*
 
 ## Features
