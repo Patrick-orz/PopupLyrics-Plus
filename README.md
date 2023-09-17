@@ -1,18 +1,18 @@
 # PopupLyrics-Plus
 ### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
-<img width="751" alt="Screen Shot 2023-09-16 at 11 46 37 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/ab072cb7-dbd9-48b2-a65d-10b50bd3949c">
+<img width="751" alt="Screen Shot 2023-09-17 at 12 09 43 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/a7acaa19-e042-463f-9f0f-1ef6d1c9999d">
   
 *Chinese translation*
 
-<img width="751" alt="Screen Shot 2023-09-16 at 11 46 23 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/20868246-8933-4e9c-b22d-821202607b05">
+<img width="751" alt="Screen Shot 2023-09-17 at 12 10 47 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/d670ce66-cb20-4683-86c4-eaf81e43cc0e">
 
 *English translation*
 
-<img width="751" alt="Screen Shot 2023-09-16 at 11 45 51 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/b1ad870e-514b-4dae-8a53-74cca70aae88">
+<img width="751" alt="Screen Shot 2023-09-17 at 12 11 02 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/d5633ea9-10d7-4410-822d-01d84304774f">
 
 *Romaji translation*
 
-<img width="751" alt="Screen Shot 2023-09-16 at 11 45 19 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/85f4ac26-9c5e-446e-96bb-10867a6f762f">
+<img width="751" alt="Screen Shot 2023-09-17 at 12 11 14 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/05885cad-e681-4dd9-be57-1bed21ac8752">
 
 *Original*
 
@@ -54,7 +54,7 @@ node app.js
 The server has to be running at http://localhost:3000 (the default port) when using the extension, don't close it!
 
 ## Installation
-Download popupLyrics.js from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
+Download [popupLyrics.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyrics.jshttps://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyrics.js) from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
 
 Spicetify path are below.
 |Platform|Path|
@@ -67,11 +67,11 @@ Host the Netease API locally at http://localhost:3000.
 
 **Have NeteaseCN service at the top to have the best experience!**
 
-<img width="401" alt="Screen Shot 2023-09-16 at 11 53 21 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/32c4690a-3cde-4d72-b65b-61ca9bcfb49b">
+<img width="400" alt="Screen Shot 2023-09-17 at 12 11 53 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/47c52793-572c-45f1-97f5-f86cd4705f44">
 
 Translation options can be changed in the Options section
 
-<img width="389" alt="Screen Shot 2023-09-16 at 11 53 55 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/f9946baa-4158-4a1d-a22c-a4bd8d691be8">
+<img width="395" alt="Screen Shot 2023-09-17 at 12 12 13 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/b16a1b42-2bd7-41e8-9c0a-6a730480ec46">
 
 ## Inspiration & Words
 [misaka10843/spicetify-popupLyrics-CN](https://github.com/misaka10843/spicetify-popupLyrics-CN)
