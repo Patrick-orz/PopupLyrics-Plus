@@ -557,7 +557,7 @@ function PopupLyrics() {
 				console.log("expected");
 				const actualAlbumName = LyricUtils.normalize(song.al.name); // usually in Simplified Chinese
 				console.log("Finished initiation");
-
+				console.log(actualAlbumName,expectedAlbumName);
 				if (actualAlbumName == expectedAlbumName || Math.abs(expectedDuration - actualDuration) < 1000) {
 					item = song;
 					break;
