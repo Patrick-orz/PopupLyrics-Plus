@@ -20,11 +20,11 @@
 ## Features
 - Way more stable [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
 - Netease Chinese lyrics translation
-- English translation through [SimplyTranslate Web](https://codeberg.org/SimpleWeb/SimplyTranslate-Web) (a bit slow)
+- English translation through [Translateer](https://github.com/Songkeys/Translateer)
 - Romaji translation
 ## Work in Progress
 - More options in display
-- Online API deployment (Vercel)
+- ~~Online hosting~~
 
 See [the roadmap](https://github.com/Patrick-orz/PopupLyrics-Plus/projects?query=is%3Aopen) for more information.
 ## Dependencies
@@ -38,9 +38,11 @@ Spicetify installation steps are below (see [Spicetify docs](https://spicetify.a
 ```curl -fsSL https://raw.githubusercontent.com/spicetify/spicetify-cli/master/install.sh | sh```
 
 ### [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi)
-The improved netease fetch requires an API to be hosted locally (online hosting coming soon).
+An [online deployed version](https://netease-cloud-music-api-patrick-orz.vercel.app/) is used by default.
 
-Hosting steps are below (see [NeteaseAPI docs](https://binaryify.github.io/NeteaseCloudMusicApi/#/?id=%e5%ae%89%e8%a3%85) for more details).
+If you would like to **self-host** for a more stable api connection, instructions are below (see [NeteaseAPI docs](https://binaryify.github.io/NeteaseCloudMusicApi/#/?id=%e5%ae%89%e8%a3%85) for more details).
+
+You can also deploy to vercel yourself, check the official docs for instructions.
 #### Installation
 ```
 git clone git@github.com:Binaryify/NeteaseCloudMusicApi.git
@@ -52,10 +54,13 @@ In the NeteaseCloudMusicApi directory:
 ```
 node app.js
 ```
-The server has to be running at http://localhost:3000 (the default port) when using the extension, don't close it!
+Self-hosting means that the server has to be running at http://localhost:3000 (the default port) when using the extension, don't close it!
+
+#### Applying Change
+Last, in order for you to use the locally hosted api for fetching, change all instances of "https://netease-cloud-music-api-patrick-orz.vercel.app/" in the source code into "http://localhost:3000/".
 
 ## Installation
-Download [popupLyrics.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyrics.js) from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
+Download [popupLyricsPlus.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyricsPlus.js) from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
 
 Spicetify path are below.
 |Platform|Path|
@@ -66,12 +71,11 @@ Spicetify path are below.
 Push extension into Spicetify and apply
 
 ```
-spicetify config extensions popuplyrics.js
+spicetify config extensions popuplyricsplus.js
 spicetify apply
 ```
 
 ## Usage
-Host the Netease API locally at http://localhost:3000.
 
 **Have NeteaseCN service at the top to have the best experience!**
 
