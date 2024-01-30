@@ -553,11 +553,10 @@ function PopupLyrics() {
             }
             // Referenced from Lyrics+ source code
 
+            // Null check final item
             if (item == null || item === 'undefined') {
-                // console.log("Cannot find track");
                 return { error: "Cannot find track" };
             }
-            //验证
 
             // console.log(item);
             // console.log(item.id);
@@ -565,21 +564,19 @@ function PopupLyrics() {
 
             /** @type {NeteaseLyric} */
 
-            currentDate = new Date();
-            // console.log(lyricURL + item.id + "&timestamp=" + currentDate.getTime());
+            // Fetch lyrics of best matching search result
             const meta = await CosmosAsync.get(lyricURL + item.id/* + "&timestamp=" + currentDate.getTime()*/);
-            //fetch 歌词
 
-            // console.log("Lyrics complete");
+            // Store netease lyrics
+            let OgLyricStr = meta.lrc;// Untranslated lyrics
+            let TLyricStr = meta.tlyric;// Translated lyrics
 
-            let OgLyricStr = meta.lrc;//未翻译
-            let TLyricStr = meta.tlyric;//翻译
-
+            // Check lyric exists
             if (!OgLyricStr || !OgLyricStr.lyric) {
+                // End function if no lyrics exist
                 console.log("No Lyrics");
                 return { error: "No Lyrics" };
             }
-            //验证歌词
 
             OgLyricStr = OgLyricStr.lyric;
             TLyricStr = TLyricStr.lyric;
@@ -806,33 +803,25 @@ function PopupLyrics() {
             sharedData = { lyrics: [] };
 
             try {
+                // Intitialize for translating
                 let data = await service.call(info);
-
                 let dataText = data.lyrics.map(lyric => lyric.text).join("\n");
-                //set up for translation
-
-                // console.log(dataText);
 
                 if (userConfigs.translation2rd == 3) {//Romaji
 
+                    // Initialize translator
                     const romajifyTranslator = new overallTranslator("ja");
-                    // console.log("runs");
+                    // Romajify
                     dataText = await romajifyTranslator.romajifyText(dataText);
-                    //translate
 
-                    // console.log(dataText);
-
+                    // Change translated results into list for reformatting
                     dataText = dataText.split("\n");
-                    //set up for re-format
 
-                    // console.log(dataText);
-                    // console.log(data,data.lyrics.length);
-
+                    // Reformat
                     for (let i = 0; i < data.lyrics.length; i++) {
-
+                        // Transfer into format that PopupLyrics accept
                         data.lyrics[i].text = dataText[i];
                     }
-                    //re-format
                 } else if (userConfigs.translation2rd == 1) {//eng
 
                     // const translateURL = "https://st.privacydev.net/api/translate/?engine=google&to=en&text=";//Use SimplyTranslate-web
