@@ -524,16 +524,19 @@ function PopupLyrics() {
 
             // Info of current song used for seartching within API
             const cleanTitle = LyricUtils.removeExtraInfo(LyricUtils.normalize(info.title));
-            let currentDate = new Date();
+            /* let currentDate = new Date(); */
             const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`)/*+"&timestamp="+ currentDate.getTime()*/;
 
             /** @type {SearchResponse} */
             // Search with API and store results within list
             const searchResults = await CosmosAsync.get(finalURL);
             const items = searchResults.result.songs;
-            let item;
+            if (!items || !items.length) {
+                return { error: "Cannot find track" };
+            }
 
-            // Find the best match from result list
+            // Find the best match from result list (Simplified)
+            /*
             for (const song of items) {// Iterate through result list
 
                 const expectedDuration = info.duration;// Length of current playing song
@@ -551,43 +554,94 @@ function PopupLyrics() {
                     break;
                 }
             }
+            */
             // Referenced from Lyrics+ source code
 
+            // Initialize for best result compare
+            const album = LyricUtils.capitalize(info.album);
+            // Find best matching result from searchResults
+            const itemId = items.findIndex(val => LyricUtils.capitalize(val.name) === album || Math.abs(info.duration - val.dt) < 1000);
             // Null check final item
-            if (item == null || item === 'undefined') {
+            if (itemId === -1) {
+                console.log("Cant find track");
                 return { error: "Cannot find track" };
             }
-
-            // console.log(item);
-            // console.log(item.id);
-            /* 搜索 */
 
             /** @type {NeteaseLyric} */
 
             // Fetch lyrics of best matching search result
-            const meta = await CosmosAsync.get(lyricURL + item.id/* + "&timestamp=" + currentDate.getTime()*/);
+            const meta = await CosmosAsync.get(lyricURL + items[itemId].id/* + "&timestamp=" + currentDate.getTime()*/);
 
             // Store netease lyrics
-            let OgLyricStr = meta.lrc;// Untranslated lyrics
-            let TLyricStr = meta.tlyric;// Translated lyrics
+            let ogLyricStr = meta.lrc;// Untranslated lyrics
+            let tLyricStr = meta.tlyric;// Translated lyrics
+
+            console.log(ogLyricStr);
+            console.log(tLyricStr);
 
             // Check lyric exists
-            if (!OgLyricStr || !OgLyricStr.lyric) {
+            if (!ogLyricStr || !ogLyricStr.lyric) {
                 // End function if no lyrics exist
-                console.log("No Lyrics");
                 return { error: "No Lyrics" };
             }
 
-            OgLyricStr = OgLyricStr.lyric;
-            TLyricStr = TLyricStr.lyric;
+            // Get lyrics string
+            ogLyricStr = ogLyricStr.lyric;
+            tLyricStr = tLyricStr.lyric;
 
-            // console.log(OgLyricStr);
-            // console.log(TLyricStr);
-            /* 获取歌词 */
+            // Initialize for parsing
+            let lines;
+            const otherInfoKeys = [
+                "\\s?作?\\s*词|\\s?作?\\s*曲|\\s?编\\s*曲?|\\s?监\\s*制?",
+                ".*编写|.*和音|.*和声|.*合声|.*提琴|.*录|.*工程|.*工作室|.*设计|.*剪辑|.*制作|.*发行|.*出品|.*后期|.*混音|.*缩混",
+                "原唱|翻唱|题字|文案|海报|古筝|二胡|钢琴|吉他|贝斯|笛子|鼓|弦乐",
+                "lrc|publish|vocal|guitar|program|produce|write|mix"
+            ];
+            const otherInfoRegexp = new RegExp(`^(${otherInfoKeys.join("|")}).*(:|：)`, "i");
 
+            // Parse OG Lyrics
             let noOgLyrics = false;
 
-            let lines = OgLyricStr.split(/\r?\n/).map(line => line.trim());
+            lines = ogLyricStr.split(/\r?\n/).map(line => line.trim());
+            const ogLyrics = lines
+                .flatMap(line => {
+                    const matchResult = line.match(/(\[.*?\])|([^\[\]]+)/g) || [line];
+                    if (!matchResult.length || matchResult.length === 1) {
+                        return;
+                    }
+                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    let text = "";
+                    if (textIndex > -1) {
+                        text = matchResult.splice(textIndex, 1)[0];
+                        text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
+                    }
+                    if (text === "纯音乐, 请欣赏") noOgLyrics = true;
+                    return matchResult.map(slice => {
+                        const result = {};
+                        const matchResult = slice.match(/[^\[\]]+/g);
+                        const [key, value] = matchResult[0].split(":") || [];
+                        const [min, sec] = [parseFloat(key), parseFloat(value)];
+                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                            result.startTime = min * 60 + sec;
+                            result.text = text || "♪";
+                            return result;
+                        }
+                        return;
+                    });
+                })
+                .sort((a, b) => {
+                    if (a.startTime === null) {
+                        return 0;
+                    }
+                    if (b.startTime === null) {
+                        return 1;
+                    }
+                    return a.startTime - b.startTime;
+                })
+                .filter(Boolean);
+
+            // Old parser
+            /*
             const ogLyrics = lines
                 .map(line => {
                     let { time, text } = LyricUtils.parseTimestamp(line);
@@ -609,52 +663,68 @@ function PopupLyrics() {
                     return null;
                 })
                 .filter(a => a);
-            // console.log("Parsed OG lyrics");
+            */
             /* Parse OG Lyrics */
+            // console.log("Parsed OG lyrics");
 
+            // Parse Translated Lyrics
             let noTLyrics = false;
 
-            lines = TLyricStr.split(/\r?\n/).map(line => line.trim());
+            lines = tLyricStr.split(/\r?\n/).map(line => line.trim());
             const tLyrics = lines
-                .map(line => {
-                    let { time, text } = LyricUtils.parseTimestamp(line);
+                .flatMap(line => {
+                    const matchResult = line.match(/(\[.*?\])|([^\[\]]+)/g) || [line];
+                    if (!matchResult.length || matchResult.length === 1) {
+                        return;
+                    }
+                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    let text = "";
+                    if (textIndex > -1) {
+                        text = matchResult.splice(textIndex, 1)[0];
+                        text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
+                    }
                     if (text === "纯音乐, 请欣赏") noTLyrics = true;
-                    if (time === undefined) {
-                        time = text.toString().replace("[", "").replace("]", "");
-                        text = "♪";
-                    }
-                    // console.log(time,text);
-
-
-                    const [key, value] = time.split(":") || [];
-                    const [min, sec] = [parseFloat(key), parseFloat(value)];
-                    if (!isNaN(min) && !isNaN(sec) && !LyricUtils.containCredits(text)) {
-                        return {
-                            startTime: (min * 60 + sec),
-                            text: text || ""
-                        };
-                    }
-                    return null;
+                    return matchResult.map(slice => {
+                        const result = {};
+                        const matchResult = slice.match(/[^\[\]]+/g);
+                        const [key, value] = matchResult[0].split(":") || [];
+                        const [min, sec] = [parseFloat(key), parseFloat(value)];
+                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                            result.startTime = min * 60 + sec;
+                            result.text = text || "♪";
+                            return result;
+                        }
+                        return;
+                    });
                 })
-                .filter(a => a);
-            // console.log("Parsed translated lyrics");	
-            /* Parse translated lyrics */
+                .sort((a, b) => {
+                    if (a.startTime === null) {
+                        return 0;
+                    }
+                    if (b.startTime === null) {
+                        return 1;
+                    }
+                    return a.startTime - b.startTime;
+                })
+                .filter(Boolean);
 
-            // console.log(ogLyrics);	
-            // console.log(tLyrics);
+            console.log(ogLyrics);
+            console.log(tLyrics);
 
-            if (noOgLyrics || !ogLyrics.length) {
-                console.log("No Lyrics");
+            // Null check
+            if (noOgLyrics) {
                 return { error: "No Lyrics" };
             }
+            if (!ogLyrics.length) {
+                return { error: "No synced lyrics" };
+            }
 
+            // Output
             let lyrics;
-            if (userConfigs.translation2rd == 2)
+            if (userConfigs.translation2rd == 2)// Translate to chinese
                 lyrics = (noTLyrics || !tLyrics.length) ? ogLyrics : tLyrics;
             else
                 lyrics = ogLyrics;
-
-            // console.log(lyrics);
 
             return { lyrics };
         }
