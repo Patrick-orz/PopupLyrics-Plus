@@ -18,13 +18,15 @@
 <img width="751" alt="Screen Shot 2023-09-17 at 12 11 14 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/05885cad-e681-4dd9-be57-1bed21ac8752">
 
 ## Features
-- Way more stable [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
-- Netease Chinese lyrics translation
-- English translation through [Translateer](https://github.com/Songkeys/Translateer)
+- Stabler [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
+- Netease Chinese lyrics translation option
+- English translation through [Translateer](https://github.com/Songkeys/Translateer) (EXPERIMENTAL)
 - Romaji translation
 ## Work in Progress
 - More options in display
-- ~~Online hosting~~
+- Chinese & Korean romanization
+- Enhance & stabilize English translation
+- ~~Online hosting (DONE)~~
 
 See [the roadmap](https://github.com/Patrick-orz/PopupLyrics-Plus/projects?query=is%3Aopen) for more information.
 ## Dependencies
