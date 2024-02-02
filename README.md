@@ -62,7 +62,7 @@ Self-hosting means that the server has to be running at http://localhost:3000 (t
 Last, in order for you to use the locally hosted api for fetching, change all instances of "https://netease-cloud-music-api-patrick-orz.vercel.app/" in the source code into "http://localhost:3000/".
 
 ## Installation
-Download [popupLyricsPlus.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyricsPlus.js) from this repo (not from /Archive!!), and place into the Spicetify Extensions directory.
+Download [popupLyricsPlus.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyricsPlus.js) from the main branch (not from /Archive!!), and place into the Spicetify Extensions directory.
 
 Spicetify path are below.
 |Platform|Path|

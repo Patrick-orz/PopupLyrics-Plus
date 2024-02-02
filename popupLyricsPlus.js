@@ -576,8 +576,8 @@ function PopupLyrics() {
             let ogLyricStr = meta.lrc;// Untranslated lyrics
             let tLyricStr = meta.tlyric;// Translated lyrics
 
-            console.log(ogLyricStr);
-            console.log(tLyricStr);
+            // console.log(ogLyricStr);
+            // console.log(tLyricStr);
 
             // Check lyric exists
             if (!ogLyricStr || !ogLyricStr.lyric) {
@@ -708,8 +708,8 @@ function PopupLyrics() {
                 })
                 .filter(Boolean);
 
-            console.log(ogLyrics);
-            console.log(tLyrics);
+            // console.log(ogLyrics);
+            // console.log(tLyrics);
 
             // Null check
             if (noOgLyrics) {
@@ -721,7 +721,7 @@ function PopupLyrics() {
 
             // Output
             let lyrics;
-            if (userConfigs.translation2rd == 2)// Translate to chinese
+            if (userConfigs.translation2rd == 2 || userConfigs.translation2rd == 1)// Translate to chinese or english
                 lyrics = (noTLyrics || !tLyrics.length) ? ogLyrics : tLyrics;
             else
                 lyrics = ogLyrics;
@@ -876,6 +876,8 @@ function PopupLyrics() {
                 // Intitialize for translating
                 let data = await service.call(info);
                 let dataText = data.lyrics.map(lyric => lyric.text).join("\n");
+                const preTranslation = data;
+                console.log(preTranslation);
 
                 if (userConfigs.translation2rd == 3) {//Romaji
 
@@ -894,18 +896,17 @@ function PopupLyrics() {
                     }
                 } else if (userConfigs.translation2rd == 1) {//eng
 
+                    // Deprecated translationURL
                     // const translateURL = "https://st.privacydev.net/api/translate/?engine=google&to=en&text=";//Use SimplyTranslate-web
                     //https://codeberg.org/SimpleWeb/SimplyTranslate-Web/src/branch/master/api.md
 
-                    const translateURL = "https://t.song.work/api?from=auto&to=en&text="
                     //translateer API
                     //https://github.com/Songkeys/Translateer
+                    const translateURL = "https://t.song.work/api?from=auto&to=en&text=";
 
                     dataText = LyricUtils.normalize(dataText.replace(/ /g, "").replace(/\n/g, "/"));
 
-                    // console.log(translateURL + encodeURIComponent( LyricUtils.normalize(dataText) ));
-
-                    // console.log(dataText.match(/\*/g).length);
+                    console.log(dataText);
 
                     /*
                     let stringParts=[];
@@ -925,15 +926,15 @@ function PopupLyrics() {
                     }
                     */
 
+                    // Translate
                     let finalString = await CosmosAsync.get(translateURL + encodeURIComponent(LyricUtils.normalize(dataText)))
                     finalString = finalString["result"].split(/\//g);
 
-                    // console.log(finalString)
-                    //翻译操作完毕
-
+                    //parse back
                     for (let i = 0; i < data.lyrics.length; i++)
                         data.lyrics[i].text = finalString[i];
-                    //parse back
+
+                    console.log(data);
                 }
 
                 // console.log(data);
