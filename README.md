@@ -18,14 +18,15 @@
 <img width="751" alt="Screen Shot 2023-09-17 at 12 11 14 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/05885cad-e681-4dd9-be57-1bed21ac8752">
 
 ## Features
-- Stabler [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
+- Stabler self-deployed [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
 - Netease Chinese lyrics translation option
-- English translation through [Translateer](https://github.com/Songkeys/Translateer) (EXPERIMENTAL)
-- Romaji translation
+- ~~English translation through [Translateer](https://github.com/Songkeys/Translateer) (EXPERIMENTAL)~~
+- English translation through self-deployed modded [DeepTranslatorApi](https://github.com/nidhaloff/deep-translator-api)
+- Japanese romaji translation
 ## Work in Progress
 - More options in display
 - Chinese & Korean romanization
-- Enhance & stabilize English translation
+- ~~Enhance & stabilize English translation (DONE to best of ability)~~
 - ~~Online hosting (DONE)~~
 
 See [the roadmap](https://github.com/Patrick-orz/PopupLyrics-Plus/projects?query=is%3Aopen) for more information.
@@ -64,7 +65,7 @@ Last, in order for you to use the locally hosted api for fetching, change all in
 ## Installation
 Download [popupLyricsPlus.js](https://github.com/Patrick-orz/PopupLyrics-Plus/blob/main/popupLyricsPlus.js) from the main branch (not from /Archive!!), and place into the Spicetify Extensions directory.
 
-Spicetify path are below.
+Spicetify paths are below.
 |Platform|Path|
 ---------|-----
 |Windows|%appdata%\spicetify\|
@@ -79,7 +80,7 @@ spicetify apply
 
 ## Usage
 
-**Have NeteaseCN service at the top to have the best experience!**
+**Have NeteaseCN service at the top to acquire the best experience!**
 
 <img width="400" alt="Screen Shot 2023-09-17 at 12 11 53 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/47c52793-572c-45f1-97f5-f86cd4705f44">
 
@@ -89,5 +90,7 @@ Translation options can be changed in the Options section
 
 ## Inspiration & Words
 [misaka10843/spicetify-popupLyrics-CN](https://github.com/misaka10843/spicetify-popupLyrics-CN)
+
+Self-deployed APIs: [NeteaseCloudMusicApi](https://netease-cloud-music-api-patrick-orz.vercel.app/) [DeepTranslatorApi](https://deep-translator-api.onrender.com)
 
 Don't heisitate to start an issue if you run into any problems! (feature requests are fine as well)
