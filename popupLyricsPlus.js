@@ -721,7 +721,7 @@ function PopupLyrics() {
 
             // Output
             let lyrics;
-            if (userConfigs.translation2rd == 2 || userConfigs.translation2rd == 1)// Translate to chinese or english
+            if (userConfigs.translation2rd == 2)// Translate to chinese or english
                 lyrics = (noTLyrics || !tLyrics.length) ? ogLyrics : tLyrics;
             else
                 lyrics = ogLyrics;
@@ -896,19 +896,21 @@ function PopupLyrics() {
                     }
                 } else if (userConfigs.translation2rd == 1) {//eng
 
-                    // Deprecated translationURL
-                    // const translateURL = "https://st.privacydev.net/api/translate/?engine=google&to=en&text=";//Use SimplyTranslate-web
-                    //https://codeberg.org/SimpleWeb/SimplyTranslate-Web/src/branch/master/api.md
+                    if (0) {//Deprecated google translate method
 
-                    //translateer API
-                    //https://github.com/Songkeys/Translateer
-                    const translateURL = "https://t.song.work/api?from=auto&to=en&text=";
+                        // Deprecated translationURL
+                        // const translateURL = "https://st.privacydev.net/api/translate/?engine=google&to=en&text=";//Use SimplyTranslate-web
+                        //https://codeberg.org/SimpleWeb/SimplyTranslate-Web/src/branch/master/api.md
 
-                    dataText = LyricUtils.normalize(dataText.replace(/ /g, "").replace(/\n/g, "/"));
+                        //translateer API
+                        //https://github.com/Songkeys/Translateer
+                        const translateURL = "https://t.song.work/api?from=auto&to=en&text=";
 
-                    console.log(dataText);
+                        dataText = LyricUtils.normalize(dataText.replace(/ /g, "").replace(/\n/g, "/"));
 
-                    /*
+                        console.log(dataText);
+
+                        /*
                     let stringParts=[];
                     let finalString = "";
                     for(let i=0;i<dataText.length;i+=250){//Split into chunks of 250
@@ -926,18 +928,40 @@ function PopupLyrics() {
                     }
                     */
 
-                    // Translate
-                    let finalString = await CosmosAsync.get(translateURL + encodeURIComponent(LyricUtils.normalize(dataText)))
-                    finalString = finalString["result"].split(/\//g);
+                        // Translate
+                        let finalString = await CosmosAsync.get(translateURL + encodeURIComponent(LyricUtils.normalize(dataText)))
+                        finalString = finalString["result"].split(/\//g);
 
-                    //parse back
-                    for (let i = 0; i < data.lyrics.length; i++)
-                        data.lyrics[i].text = finalString[i];
+                        //parse back
+                        for (let i = 0; i < data.lyrics.length; i++)
+                            data.lyrics[i].text = finalString[i];
 
-                    console.log(data);
+                        console.log(data);
+                    } else {
+                        //Use new modded batch translation api made by me
+                        const batchString = data.lyrics.map(entry => entry.text);
+                        console.log(batchString);
+                        const res = await fetch("https://deep-translator-api.onrender.com/google/", {
+                            method: "POST",
+                            body: JSON.stringify({
+                                text: batchString,
+                                source: "auto",
+                                target: "en",
+                            }),
+                            headers: { "Content-Type": "application/json" },
+                            mode: "cors",
+                        });
+
+                        const resStr = await res.json();
+                        console.log(resStr.translation);
+
+                        //parse back
+                        for (let i = 0; i < resStr.translation.length; i++)
+                            data.lyrics[i].text = resStr.translation[i];
+                    }
+
+                    // console.log(data);
                 }
-
-                // console.log(data);
 
                 sharedData = data;
 
