@@ -1,7 +1,9 @@
+//Fix branch
 // NAME: Popup Lyrics
 // AUTHOR: khanhas
 //         Netease API parser and UI from https://github.com/mantou132/Spotify-Lyrics
 // DESCRIPTION: Pop lyrics up
+// MODDER: patrick-orz
 
 /// <reference path="../globals.d.ts" />
 
@@ -245,6 +247,155 @@ function PopupLyrics() {
             }
 
             return { lyrics };
+        },
+
+        // Fetch from NeteaseMusicAPI and store chinese lyrics
+        async fetchNeteaseCN(info) {
+            // URL of deployed Netease API, used for fetching
+            const searchURL = "https://netease-cloud-music-api-patrick-orz.vercel.app/cloudsearch?type=1&keywords=";
+            const lyricURL = "https://netease-cloud-music-api-patrick-orz.vercel.app/lyric?id=";
+            const requestHeader = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0"
+            };
+
+            const cleanTitle = LyricUtils.removeExtraInfo(LyricUtils.normalize(info.title));
+            const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`);
+
+            const searchResults = await CosmosAsync.get(finalURL, null, requestHeader);
+            const items = searchResults.result.songs;
+            if (!items || !items.length) {
+                return { error: "Cannot find track" };
+            }
+
+
+            const album = LyricUtils.capitalize(info.album);
+            const itemId = items.findIndex(val => LyricUtils.capitalize(val.name) === album || Math.abs(info.duration - val.dt) < 1000);
+            if (itemId === -1) return { error: "Cannot find track" };
+
+            const meta = await CosmosAsync.get(lyricURL + items[itemId].id, null, requestHeader);
+
+            // Store netease lyrics
+            let ogLyricStr = meta.lrc;// Untranslated lyrics
+            let tLyricStr = meta.tlyric;// Translated lyrics
+
+            if (!ogLyricStr || !ogLyricStr.lyric) {
+                return { error: "No lyrics" };
+            }
+
+            ogLyricStr = ogLyricStr.lyric;
+            tLyricStr = tLyricStr.lyric;
+
+            let lines;
+            const otherInfoKeys = [
+                "\\s?作?\\s*词|\\s?作?\\s*曲|\\s?编\\s*曲?|\\s?监\\s*制?",
+                ".*编写|.*和音|.*和声|.*合声|.*提琴|.*录|.*工程|.*工作室|.*设计|.*剪辑|.*制作|.*发行|.*出品|.*后期|.*混音|.*缩混",
+                "原唱|翻唱|题字|文案|海报|古筝|二胡|钢琴|吉他|贝斯|笛子|鼓|弦乐",
+                "lrc|publish|vocal|guitar|program|produce|write|mix"
+            ];
+            const otherInfoRegexp = new RegExp(`^(${otherInfoKeys.join("|")}).*(:|：)`, "i");
+
+            // Parse OG
+            lines = ogLyricStr.split(/\r?\n/).map(line => line.trim());
+            let noOgLyrics = false;
+            const ogLyrics = lines
+                .flatMap(line => {
+                    // ["[ar:Beyond]"]
+                    // ["[03:10]"]
+                    // ["[03:10]", "永远高唱我歌"]
+                    // ["永远高唱我歌"]
+                    // ["[03:10]", "[03:10]", "永远高唱我歌"]
+                    const matchResult = line.match(/(\[.*?\])|([^\[\]]+)/g) || [line];
+                    if (!matchResult.length || matchResult.length === 1) {
+                        return;
+                    }
+                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    let text = "";
+                    if (textIndex > -1) {
+                        text = matchResult.splice(textIndex, 1)[0];
+                        text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
+                    }
+                    if (text === "纯音乐, 请欣赏") noOgLyrics = true;
+                    return matchResult.map(slice => {
+                        const result = {};
+                        const matchResult = slice.match(/[^\[\]]+/g);
+                        const [key, value] = matchResult[0].split(":") || [];
+                        const [min, sec] = [parseFloat(key), parseFloat(value)];
+                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                            result.startTime = min * 60 + sec;
+                            result.text = text || "♪";
+                            return result;
+                        }
+                        return;
+                    });
+                })
+                .sort((a, b) => {
+                    if (a.startTime === null) {
+                        return 0;
+                    }
+                    if (b.startTime === null) {
+                        return 1;
+                    }
+                    return a.startTime - b.startTime;
+                })
+                .filter(Boolean);
+            console.log(ogLyrics);
+
+            // Parse Translated
+            lines = tLyricStr.split(/\r?\n/).map(line => line.trim());
+            let noTLyrics = false;
+            const tLyrics = lines
+                .flatMap(line => {
+                    const matchResult = line.match(/(\[.*?\])|([^\[\]]+)/g) || [line];
+                    if (!matchResult.length || matchResult.length === 1) {
+                        return;
+                    }
+                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    let text = "";
+                    if (textIndex > -1) {
+                        text = matchResult.splice(textIndex, 1)[0];
+                        text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
+                    }
+                    if (text === "纯音乐, 请欣赏") noTLyrics = true;
+                    return matchResult.map(slice => {
+                        const result = {};
+                        const matchResult = slice.match(/[^\[\]]+/g);
+                        const [key, value] = matchResult[0].split(":") || [];
+                        const [min, sec] = [parseFloat(key), parseFloat(value)];
+                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                            result.startTime = min * 60 + sec;
+                            result.text = text || "♪";
+                            return result;
+                        }
+                        return;
+                    });
+                })
+                .sort((a, b) => {
+                    if (a.startTime === null) {
+                        return 0;
+                    }
+                    if (b.startTime === null) {
+                        return 1;
+                    }
+                    return a.startTime - b.startTime;
+                })
+                .filter(Boolean);
+            console.log(tLyrics);
+
+            // Check & Output
+            if (noOgLyrics) {
+                return { error: "No lyrics" };
+            }
+            if (!ogLyrics.length) {
+                return { error: "No synced lyrics" };
+            }
+
+            let lyrics;
+            if (userConfigs.translation2rd == 2)
+                lyrics = (noTLyrics || !tLyrics.length) ? ogLyrics : tLyrics;
+            else
+                lyrics = ogLyrics;
+
+            return { lyrics };
         }
     };
 
@@ -252,12 +403,18 @@ function PopupLyrics() {
         smooth: boolLocalStorage("popup-lyrics:smooth"),
         centerAlign: boolLocalStorage("popup-lyrics:center-align"),
         showCover: boolLocalStorage("popup-lyrics:show-cover"),
+        translation2rd: Number(LocalStorage.get("popup-lyrics:translation-2rd")),
         fontSize: Number(LocalStorage.get("popup-lyrics:font-size")),
         blurSize: Number(LocalStorage.get("popup-lyrics:blur-size")),
         fontFamily: LocalStorage.get("popup-lyrics:font-family") || "spotify-circular",
         ratio: LocalStorage.get("popup-lyrics:ratio") || "11",
         delay: Number(LocalStorage.get("popup-lyrics:delay")),
         services: {
+            neteaseCN: {
+                on: boolLocalStorage("popup-lyrics:services:netease:on"),
+                call: LyricProviders.fetchNeteaseCN,
+                desc: "NeteaseAPI OG & Chinese lyrics fetch through self-deployed API"
+            },
             netease: {
                 on: boolLocalStorage("popup-lyrics:services:netease:on"),
                 call: LyricProviders.fetchNetease,
@@ -828,6 +985,18 @@ button.switch.small {
                 userConfigs.showCover = state;
                 LocalStorage.set("popup-lyrics:show-cover", String(state));
             });
+
+            const translation2 = createOptions("Language to translate into",
+                {
+                    0: "None",
+                    1: "English (Google)",
+                    2: "Chinese (NeteaseCN)",
+                    3: "Romaji (Kuroshiro)"
+                }, userConfigs.translation2rd, state => {
+                    userConfigs.translation2rd = state;
+                    LocalStorage.set("popup-lyrics:translation-2rd", state);
+                    updateTrack();
+                }, true);
             const ratio = createOptions("Aspect ratio", { 11: "1:1", 43: "4:3", 169: "16:9" }, userConfigs.ratio, state => {
                 userConfigs.ratio = state;
                 LocalStorage.set("popup-lyrics:ratio", state);
@@ -943,7 +1112,7 @@ button.switch.small {
             }
             stackServiceElements();
 
-            configContainer.append(style, optionHeader, smooth, center, cover, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
+            configContainer.append(style, optionHeader, smooth, center, cover, translation2, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
         }
         Spicetify.PopupModal.display({
             title: "Popup Lyrics",
@@ -1073,4 +1242,3 @@ button.switch.small {
         return container;
     }
 }
-//Fix branch
