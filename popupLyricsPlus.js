@@ -710,6 +710,7 @@ function PopupLyrics() {
                         data.lyrics[i].text = dataStr[i];
                     }
                 } else if (userConfigs.translation2rd == 1) {//English
+
                     dataStr = await intoEnglish(data.lyrics.map(lyric => lyric.text));
 
                     // Reformat
