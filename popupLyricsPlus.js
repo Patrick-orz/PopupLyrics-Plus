@@ -697,21 +697,23 @@ function PopupLyrics() {
                 const data = await service.call(info);
                 console.log(data);
 
-                let dataStr = data.lyrics.map(lyric => lyric.text).join("\n");
+                let dataStr;
 
                 // Translate into Eng/Romaji
                 if (userConfigs.translation2rd == 3) {//Romaji
-                    // Initialize translator
-                    const romajifyTranslator = new overallTranslator("ja");
-                    // Romajify
-                    dataStr = await romajifyTranslator.romajifyText(dataStr);
 
-                    // Change translated results into list for reformatting
-                    dataStr = dataStr.split("\n");
+                    dataStr = await intoRomaji(data.lyrics.map(lyric => lyric.text).join("\n"));
 
                     // Reformat
                     for (let i = 0; i < data.lyrics.length; i++) {
                         // Transfer into format that PopupLyrics accept
+                        data.lyrics[i].text = dataStr[i];
+                    }
+                } else if (userConfigs.translation2rd == 1) {//English
+                    dataStr = await intoEnglish(data.lyrics.map(lyric => lyric.text));
+
+                    // Reformat
+                    for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
                 }
@@ -724,6 +726,37 @@ function PopupLyrics() {
                 sharedData = { error: "No lyrics" };
             }
         }
+    }
+
+    async function intoRomaji(str) {
+        // Initialize translator
+        const romajifyTranslator = new overallTranslator("ja");
+        // Romajify
+        let tempStr = await romajifyTranslator.romajifyText(str);
+
+        // Change translated results into list for reformatting
+        tempStr = tempStr.split("\n");
+
+        return tempStr;
+    }
+
+    async function intoEnglish(str) {
+        //Use new modded batch translation api made by me
+        console.log(str);
+        const res = await fetch("https://deep-translator-api.onrender.com/google/", {
+            method: "POST",
+            body: JSON.stringify({
+                text: str,
+                source: "auto",
+                target: "en",
+            }),
+            headers: { "Content-Type": "application/json" },
+            mode: "cors",
+        });
+
+        const resStr = await res.json();
+        console.log(resStr.translation);
+        return resStr.translation;
     }
 
     // simple word segmentation rules
