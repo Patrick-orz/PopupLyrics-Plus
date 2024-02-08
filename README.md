@@ -22,6 +22,7 @@
 - Netease Chinese lyrics translation option
 - ~~English translation through [Translateer](https://github.com/Songkeys/Translateer) (EXPERIMENTAL)~~
 - English translation through self-deployed modded [DeepTranslatorApi](https://github.com/nidhaloff/deep-translator-api)
+    - Can be slow via first translation, as API has to awake. Be patient on startup!
 - Japanese romaji translation
 ## Work in Progress
 - More options in display
