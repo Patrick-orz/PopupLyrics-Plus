@@ -3,7 +3,13 @@
 // AUTHOR: khanhas
 //         Netease API parser and UI from https://github.com/mantou132/Spotify-Lyrics
 // DESCRIPTION: Pop lyrics up
+
 // MODDER: patrick-orz
+// ADDED FEATURES:
+// - Additional NeteaseMusic API
+// - Netease Chinese Lyrics
+// - Google english translations
+// - Romajify
 
 /// <reference path="../globals.d.ts" />
 
