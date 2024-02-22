@@ -650,7 +650,7 @@ function PopupLyrics() {
     lyricCtx.fillRect(0, 0, 1, 1);
     lyricVideo.play();
 
-    const button = new Spicetify.Topbar.Button("Popup Lyrics", "lyrics", () => {
+    const button = new Spicetify.Topbar.Button("Popup Lyrics Plus", "lyrics", () => {
         if (!lyricVideoIsOpen) {
             lyricVideo.requestPictureInPicture();
         } else {
@@ -1326,7 +1326,7 @@ button.switch.small {
             configContainer.append(style, optionHeader, smooth, center, cover, translation2, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
         }
         Spicetify.PopupModal.display({
-            title: "Popup Lyrics",
+            title: "Popup Lyrics Plus",
             content: configContainer
         });
     }
