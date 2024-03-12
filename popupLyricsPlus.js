@@ -713,6 +713,19 @@ function PopupLyrics() {
                     // Reformat
                     for (let i = 0; i < data.lyrics.length; i++) {
                         // Transfer into format that PopupLyrics accept
+
+                        // Remove ONE spaces before or after special symbols
+                        // '"…\-!?()[\]:;\/&*+%$#@~^,.。
+                        dataStr[i] = dataStr[i].replace(
+                            /\s*[\'"…\-!?()[\]:;\/&*+%$#@~^,.。]\s*/g,
+                            function(match) {
+                                return match.substring(1, match.length - 1);
+                            }
+                        );
+
+                        //Replace consecutive spaces with one space
+                        dataStr[i] = dataStr[i].replace(/\s+/g, ' ');
+
                         data.lyrics[i].text = dataStr[i];
                     }
                 } else if (userConfigs.translation2rd == 1) {//English
