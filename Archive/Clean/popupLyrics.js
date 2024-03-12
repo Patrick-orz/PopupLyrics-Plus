@@ -11,10 +11,11 @@ if (!navigator.serviceWorker) {
 	// setTimeout and setInterval are also throttled at 1 second.
 	// Offload setInterval to a Worker to consistently call tick function.
 	let num = null;
-	onmessage = function (event) {
+	// biome-ignore lint/suspicious/noGlobalAssign: <explanation>
+	onmessage = event => {
 		if (event.data === "popup-lyric-request-update") {
 			console.warn("popup-lyric-request-update");
-			num = setInterval(() => postMessage("popup-lyric-update-ui"), 8);
+			num = setInterval(() => postMessage("popup-lyric-update-ui"), 16.66);
 		} else if (event.data === "popup-lyric-stop-update") {
 			clearInterval(num);
 			num = null;
@@ -33,14 +34,14 @@ function PopupLyrics() {
 	}
 
 	const worker = new Worker("./extensions/popupLyrics.js");
-	worker.onmessage = function (event) {
+	worker.onmessage = event => {
 		if (event.data === "popup-lyric-update-ui") {
 			tick(userConfigs);
 		}
 	};
 
-	class LyricUtils {
-		static normalize(s, emptySymbol = true) {
+	const LyricUtils = {
+		normalize(s, emptySymbol = true) {
 			const result = s
 				.replace(/（/g, "(")
 				.replace(/）/g, ")")
@@ -60,9 +61,9 @@ function PopupLyrics() {
 				result.replace(/-/g, " ").replace(/\//g, " ");
 			}
 			return result.replace(/\s+/g, " ").trim();
-		}
+		},
 
-		static removeExtraInfo(s) {
+		removeExtraInfo(s) {
 			return (
 				s
 					.replace(/-\s+(feat|with|prod).*/i, "")
@@ -70,46 +71,16 @@ function PopupLyrics() {
 					.replace(/\s-\s.*/, "")
 					.trim() || s
 			);
-		}
+		},
 
-		static capitalize(s) {
+		capitalize(s) {
 			return s.replace(/^(\w)/, $1 => $1.toUpperCase());
 		}
-	}
+	};
 
-	class LyricProviders {
-		/** Netease PyNCM API
-		 *
-		 * @typedef {{
-		 *   result: {
-		 *     songs: {
-		 *       name: string,
-		 *       id: number,
-		 *		 dt: number,  // duration in ms
-		 *       al: {        // album
-		 * 			name: string,
-		 *       },
-		 *     }[],
-		 *   },
-		 * }} SearchResponse
-		 *
-		 * @typedef {{
-		 * 	title: string,
-		 * 	artist: string,
-		 * 	album: string,
-		 * 	duration: number,
-		 * }} Info
-		 *
-		 * @typedef {{
-		 * 	lrc: {
-		 * 		lyric: string,
-		 * 		klyric: undefined, // unimplemented
-		 * 	},
-		 * }} NeteaseLyric
-		 */
-
-		static async fetchSpotify(info) {
-			const baseURL = "wg://lyrics/v1/track/";
+	const LyricProviders = {
+		async fetchSpotify(info) {
+			const baseURL = "https://spclient.wg.spotify.com/lyrics/v1/track/";
 			const id = info.uri.split(":")[2];
 			const body = await CosmosAsync.get(baseURL + id);
 
@@ -124,10 +95,11 @@ function PopupLyrics() {
 			}));
 
 			return { lyrics };
-		}
+		},
 
-		static async fetchMusixmatch(info) {
-			const baseURL = `https://apic-desktop.musixmatch.com/ws/1.1/macro.subtitles.get?format=json&namespace=lyrics_synched&subtitle_format=mxm&app_id=web-desktop-app-v1.0&`;
+		async fetchMusixmatch(info) {
+			const baseURL =
+				"https://apic-desktop.musixmatch.com/ws/1.1/macro.subtitles.get?format=json&namespace=lyrics_synched&subtitle_format=mxm&app_id=web-desktop-app-v1.0&";
 
 			const durr = info.duration / 1000;
 
@@ -145,7 +117,7 @@ function PopupLyrics() {
 			const finalURL =
 				baseURL +
 				Object.keys(params)
-					.map(key => key + "=" + encodeURIComponent(params[key]))
+					.map(key => `${key}=${encodeURIComponent(params[key])}`)
 					.join("&");
 
 			try {
@@ -157,7 +129,7 @@ function PopupLyrics() {
 				body = body.message.body.macro_calls;
 
 				if (body["matcher.track.get"].message.header.status_code !== 200) {
-					let head = body["matcher.track.get"].message.header;
+					const head = body["matcher.track.get"].message.header;
 					return {
 						error: `Requested error: ${head.status_code}: ${head.hint} - ${head.mode}`
 					};
@@ -168,11 +140,9 @@ function PopupLyrics() {
 				const isRestricted = body["track.lyrics.get"].message.header.status_code === 200 && body["track.lyrics.get"].message.body.lyrics.restricted;
 				const isInstrumental = meta.track.instrumental;
 
-				if (isRestricted) {
-					return { error: "Unfortunately we're not authorized to show these lyrics." };
-				} else if (isInstrumental) {
-					return { error: "Instrumental" };
-				} else if (hasSynced) {
+				if (isRestricted) return { error: "Unfortunately we're not authorized to show these lyrics." };
+				if (isInstrumental) return { error: "Instrumental" };
+				if (hasSynced) {
 					const subtitle = body["track.subtitles.get"].message.body.subtitle_list[0].subtitle;
 
 					const lyrics = JSON.parse(subtitle.subtitle_body).map(line => ({
@@ -180,36 +150,35 @@ function PopupLyrics() {
 						startTime: line.time.total
 					}));
 					return { lyrics };
-				} else {
-					return { error: "No lyrics" };
 				}
+
+				return { error: "No lyrics" };
 			} catch (err) {
 				return { error: err.message };
 			}
-		}
+		},
 
-		static async fetchNetease(info) {
-			const searchURL = "https://pyncmd.apis.imouto.in/api/pyncm?module=cloudsearch&method=GetSearchResult&keyword=";
-			const lyricURL = "https://pyncmd.apis.imouto.in/api/pyncm?module=track&method=GetTrackLyrics&song_id=";
+		async fetchNetease(info) {
+			const searchURL = "https://music.xianqiao.wang/neteaseapiv2/search?limit=10&type=1&keywords=";
+			const lyricURL = "https://music.xianqiao.wang/neteaseapiv2/lyric?id=";
+			const requestHeader = {
+				"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0"
+			};
 
 			const cleanTitle = LyricUtils.removeExtraInfo(LyricUtils.normalize(info.title));
 			const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`);
 
-			/** @type {SearchResponse} */
-			const searchResults = await CosmosAsync.get(finalURL);
+			const searchResults = await CosmosAsync.get(finalURL, null, requestHeader);
 			const items = searchResults.result.songs;
-
-			if (!items) {
+			if (!items || !items.length) {
 				return { error: "Cannot find track" };
 			}
 
 			const album = LyricUtils.capitalize(info.album);
-
-			let itemId = items.findIndex(val => LyricUtils.capitalize(val.al.name) === album || Math.abs(info.duration - val.dt) < 1000);
+			const itemId = items.findIndex(val => LyricUtils.capitalize(val.album.name) === album || Math.abs(info.duration - val.duration) < 1000);
 			if (itemId === -1) return { error: "Cannot find track" };
 
-			/** @type {NeteaseLyric} */
-			const meta = await CosmosAsync.get(lyricURL + items[itemId].id);
+			const meta = await CosmosAsync.get(lyricURL + items[itemId].id, null, requestHeader);
 			let lyricStr = meta.lrc;
 
 			if (!lyricStr || !lyricStr.lyric) {
@@ -228,7 +197,7 @@ function PopupLyrics() {
 			const lines = lyricStr.split(/\r?\n/).map(line => line.trim());
 			let noLyrics = false;
 			const lyrics = lines
-				.map(line => {
+				.flatMap(line => {
 					// ["[ar:Beyond]"]
 					// ["[03:10]"]
 					// ["[03:10]", "永远高唱我歌"]
@@ -249,8 +218,8 @@ function PopupLyrics() {
 						const result = {};
 						const matchResult = slice.match(/[^\[\]]+/g);
 						const [key, value] = matchResult[0].split(":") || [];
-						const [min, sec] = [parseFloat(key), parseFloat(value)];
-						if (!isNaN(min) && !isNaN(sec) && !otherInfoRegexp.test(text)) {
+						const [min, sec] = [Number.parseFloat(key), Number.parseFloat(value)];
+						if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
 							result.startTime = min * 60 + sec;
 							result.text = text || "♪";
 							return result;
@@ -258,7 +227,6 @@ function PopupLyrics() {
 						return;
 					});
 				})
-				.flat()
 				.sort((a, b) => {
 					if (a.startTime === null) {
 						return 0;
@@ -268,7 +236,7 @@ function PopupLyrics() {
 					}
 					return a.startTime - b.startTime;
 				})
-				.filter(a => a);
+				.filter(Boolean);
 
 			if (noLyrics) {
 				return { error: "No lyrics" };
@@ -279,7 +247,7 @@ function PopupLyrics() {
 
 			return { lyrics };
 		}
-	}
+	};
 
 	const userConfigs = {
 		smooth: boolLocalStorage("popup-lyrics:smooth"),
@@ -294,7 +262,7 @@ function PopupLyrics() {
 			netease: {
 				on: boolLocalStorage("popup-lyrics:services:netease:on"),
 				call: LyricProviders.fetchNetease,
-				desc: `Crowdsourced lyrics provider ran by Chinese developers and users.`
+				desc: "Crowdsourced lyrics provider ran by Chinese developers and users."
 			},
 			musixmatch: {
 				on: boolLocalStorage("popup-lyrics:services:musixmatch:on"),
@@ -305,7 +273,7 @@ function PopupLyrics() {
 			spotify: {
 				on: boolLocalStorage("popup-lyrics:services:spotify:on"),
 				call: LyricProviders.fetchSpotify,
-				desc: `Lyrics sourced from official Spotify API.`
+				desc: "Lyrics sourced from official Spotify API."
 			}
 		},
 		servicesOrder: []
@@ -322,11 +290,11 @@ function PopupLyrics() {
 
 		const allServices = Object.keys(userConfigs.services);
 		if (userConfigs.servicesOrder.length !== allServices.length) {
-			allServices.forEach(s => {
+			for (const s of allServices) {
 				if (!userConfigs.servicesOrder.includes(s)) {
 					userConfigs.servicesOrder.push(s);
 				}
-			});
+			}
 			LocalStorage.set("popup-lyrics:services-order", JSON.stringify(userConfigs.servicesOrder));
 		}
 	} catch {
@@ -356,7 +324,9 @@ function PopupLyrics() {
 		tick(userConfigs);
 		updateTrack();
 	};
-	lyricVideo.onleavepictureinpicture = () => (lyricVideoIsOpen = false);
+	lyricVideo.onleavepictureinpicture = () => {
+		lyricVideoIsOpen = false;
+	};
 
 	const lyricCanvas = document.createElement("canvas");
 	lyricCanvas.width = lyricVideo.width;
@@ -411,7 +381,7 @@ function PopupLyrics() {
 			uri: Player.data.item.uri
 		};
 
-		for (let name of userConfigs.servicesOrder) {
+		for (const name of userConfigs.servicesOrder) {
 			const service = userConfigs.services[name];
 			if (!service.on) continue;
 			sharedData = { lyrics: [] };
@@ -434,7 +404,8 @@ function PopupLyrics() {
 		const result = [];
 		const words = str.split(/(\p{sc=Han}|\p{sc=Katakana}|\p{sc=Hiragana}|\p{sc=Hang}|\p{gc=Punctuation})|\s+/gu);
 		let tempWord = "";
-		words.forEach((word = " ") => {
+		for (let word of words) {
+			word ??= " ";
 			if (word) {
 				if (tempWord && /(“|')$/.test(tempWord) && word !== " ") {
 					// End of line not allowed
@@ -447,12 +418,12 @@ function PopupLyrics() {
 					tempWord = word;
 				}
 			}
-		});
+		}
 		if (tempWord) result.push(tempWord);
 		return result;
 	}
 
-	function drawParagraph(ctx, str = "", options) {
+	function drawParagraph(ctx, str, options) {
 		let actualWidth = 0;
 		const maxWidth = ctx.canvas.width - options.left - options.right;
 		const words = getWords(str);
@@ -539,7 +510,7 @@ function PopupLyrics() {
 			const { width, height } = ctx.canvas;
 			ctx.imageSmoothingEnabled = false;
 			ctx.save();
-			let blurSize = Number(userConfigs.blurSize);
+			const blurSize = Number(userConfigs.blurSize);
 			ctx.filter = `blur(${blurSize}px)`;
 			ctx.drawImage(image, -blurSize * 2, -blurSize * 2 - (width - height) / 2, width + 4 * blurSize, width + 4 * blurSize);
 			ctx.restore();
@@ -631,7 +602,7 @@ function PopupLyrics() {
 			}
 		});
 
-		if (currentIndex == -1) {
+		if (currentIndex === -1) {
 			drawText(ctx, "");
 			return;
 		}
@@ -723,11 +694,14 @@ function PopupLyrics() {
 	}
 
 	let workerIsRunning = null;
+	let timeout = null;
 
 	async function tick(options) {
 		if (!lyricVideoIsOpen) {
 			return;
 		}
+
+		if (timeout) clearTimeout(timeout);
 
 		const audio = {
 			currentTime: (Player.getProgress() - Number(options.delay)) / 1000,
@@ -749,22 +723,24 @@ function PopupLyrics() {
 		} else if (!audio.duration || lyrics.length === 0) {
 			drawText(lyricCtx, audio.currentSrc ? "Loading" : "Waiting");
 		}
-		if (lyrics && lyrics.length) {
-			if (document.hidden) {
-				if (!workerIsRunning) {
-					worker.postMessage("popup-lyric-request-update");
-					workerIsRunning = true;
-				}
-			} else {
-				if (workerIsRunning) {
-					worker.postMessage("popup-lyric-stop-update");
-					workerIsRunning = false;
-				}
 
-				requestAnimationFrame(() => tick(options));
+		if (!lyrics?.length) {
+			timeout = setTimeout(tick, 1000, options);
+			return;
+		}
+
+		if (document.hidden) {
+			if (!workerIsRunning) {
+				worker.postMessage("popup-lyric-request-update");
+				workerIsRunning = true;
 			}
 		} else {
-			setTimeout(tick, 80, options);
+			if (workerIsRunning) {
+				worker.postMessage("popup-lyric-stop-update");
+				workerIsRunning = false;
+			}
+
+			requestAnimationFrame(() => tick(options));
 		}
 	}
 
@@ -963,9 +939,9 @@ button.switch.small {
 				updateTrack();
 			}
 
-			userConfigs.servicesOrder.forEach(name => {
+			for (const name of userConfigs.servicesOrder) {
 				userConfigs.services[name].element = createServiceOption(name, userConfigs.services[name], switchCallback, posCallback, tokenChangeCallback);
-			});
+			}
 			stackServiceElements();
 
 			configContainer.append(style, optionHeader, smooth, center, cover, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
@@ -1068,7 +1044,7 @@ button.switch.small {
         </button>
         <button class="switch">
             <svg height="16" width="16" viewBox="0 0 16 16" fill="currentColor">
-                ${Spicetify.SVGIcons["check"]}
+                ${Spicetify.SVGIcons.check}
             </svg>
         </button>
     </div>
