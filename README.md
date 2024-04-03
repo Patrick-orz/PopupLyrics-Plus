@@ -95,3 +95,5 @@ Translation options can be changed in the Options section
 Self-deployed APIs: [NeteaseCloudMusicApi](https://netease-cloud-music-api-patrick-orz.vercel.app/) [DeepTranslatorApi](https://deep-translator-api.onrender.com)
 
 Don't heisitate to start an issue if you run into any problems! (feature requests are fine as well)
+
+🌟 means a lot to me!
