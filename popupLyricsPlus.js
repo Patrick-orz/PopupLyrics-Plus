@@ -203,7 +203,7 @@ function PopupLyrics() {
             return converter(text);
         }
 
-        
+
         async convertPinyin(text, seperator = " ") {
             if (!this.finished.py) {
                 await overallTranslator.#sleep(100);
@@ -213,16 +213,16 @@ function PopupLyrics() {
             var value = text;
             var pinyin = '';
             if (value) {
-              var tokens = this.Pinyin.parse(text);
-              var lastToken;
-              tokens.forEach(function (v, i) {
-                if (v.type === 2) {
-                  pinyin += pinyin && !/\n|\s/.test(lastToken.target) ? ' ' + v.target.toLowerCase() : v.target.toLowerCase();
-                } else {
-                  pinyin += (lastToken && lastToken.type === 2 ? ' ' : '') + v.target;
-                }
-                lastToken = v;
-              });
+                var tokens = this.Pinyin.parse(text);
+                var lastToken;
+                tokens.forEach(function(v, i) {
+                    if (v.type === 2) {
+                        pinyin += pinyin && !/\n|\s/.test(lastToken.target) ? ' ' + v.target.toLowerCase() : v.target.toLowerCase();
+                    } else {
+                        pinyin += (lastToken && lastToken.type === 2 ? ' ' : '') + v.target;
+                    }
+                    lastToken = v;
+                });
             }
 
             return pinyin;
@@ -799,13 +799,18 @@ function PopupLyrics() {
     }
 
     async function intoRomaji(str) {
-        const romajifyTranslator = new overallTranslator("ja");
-        let tempStr = await romajifyTranslator.romajifyText(str);
+        try {
+            const romajifyTranslator = new overallTranslator("ja");
+            let tempStr = await romajifyTranslator.romajifyText(str);
 
-        // Change translated results into list for reformatting
-        tempStr = tempStr.split("\n");
+            // Change translated results into list for reformatting
+            tempStr = tempStr.split("\n");
 
-        return tempStr;
+            return tempStr;
+        }
+        catch (e) {
+            return 'OK';
+        }
     }
 
     async function intoEnglish(str) {
@@ -825,30 +830,30 @@ function PopupLyrics() {
     }
 
     async function intoPinyin(str) {
-        try{
+        try {
             const pinyinTranslator = new overallTranslator("py");
             let tempStr = await pinyinTranslator.convertPinyin(str);
-    
+
             tempStr = tempStr.split("\n");
-    
+
             return tempStr;
         }
-        catch(e){
+        catch (e) {
             return 'OK';
         }
 
     }
 
     async function intoRomaja(str) {
-        try{
+        try {
             const pinyinTranslator = new overallTranslator("ko");
             let tempStr = await pinyinTranslator.convertToRomaja(str);
-    
+
             tempStr = tempStr.split("\n");
-    
+
             return tempStr;
         }
-        catch(e){
+        catch (e) {
             return 'OK';
         }
 
