@@ -17,19 +17,19 @@
 
 *Original*
 
-## Features
+## ADDITIONAL Features
 - Stabler self-deployed [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
 - Netease Chinese lyrics translation option
 - ~~English translation through [Translateer](https://github.com/Songkeys/Translateer) (EXPERIMENTAL)~~
 - English translation through self-deployed modded [DeepTranslatorApi](https://github.com/nidhaloff/deep-translator-api)
     - Can be slow via first translation as API has to awake. Be patient on startup!
 - Japanese romaji translation
-- Korean romaja translation (#7)
-- Chinese PinYin translation (#7)
+- Korean romaja translation ([#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))
+- Chinese PinYin translation ([#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))
 ## Work in Progress
 - More options in display
 - Language detection
-- ~~Chinese & Korean romanization (MERGED #7)~~
+- ~~Chinese & Korean romanization (MERGED [#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))~~
 - ~~Enhance & stabilize English translation (DONE to best of ability)~~
 - ~~Online hosting (DONE)~~
 
