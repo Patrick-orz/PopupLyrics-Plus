@@ -24,9 +24,12 @@
 - English translation through self-deployed modded [DeepTranslatorApi](https://github.com/nidhaloff/deep-translator-api)
     - Can be slow via first translation as API has to awake. Be patient on startup!
 - Japanese romaji translation
+- Korean romaja translation (#7)
+- Chinese PinYin translation (#7)
 ## Work in Progress
 - More options in display
-- Chinese & Korean romanization
+- Language detection
+- ~~Chinese & Korean romanization (MERGED #7)~~
 - ~~Enhance & stabilize English translation (DONE to best of ability)~~
 - ~~Online hosting (DONE)~~
 
