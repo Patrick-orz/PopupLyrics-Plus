@@ -776,12 +776,12 @@ function PopupLyrics() {
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
-                } else if (userConfigs.translation2rd == 4) {//English
+                } else if (userConfigs.translation2rd == 4) {//Pinyin
                     dataStr = await intoPinyin(data.lyrics.map(lyric => lyric.text).join("\n"));
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
-                } else if (userConfigs.translation2rd == 5) {//English
+                } else if (userConfigs.translation2rd == 5) {//Romaja
                     dataStr = await intoRomaja(data.lyrics.map(lyric => lyric.text).join("\n"));
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
@@ -1290,9 +1290,9 @@ button.switch.small {
                     0: "None",
                     1: "English (Google)",
                     2: "Chinese (NeteaseCN)",
-                    3: "Romaji (Kuroshiro)",
-                    4: "Chinese Pinyin (Tiny Pinyin)",
-                    5: "Romanja (Aromanize)"
+                    3: "Romaji (Kuroshiro for Japanese)",
+                    4: "Chinese Pinyin (Tiny Pinyin for Chinese)",
+                    5: "Romanja (Aromanize for Korean)"
                 }, userConfigs.translation2rd, state => {
                     userConfigs.translation2rd = state;
                     LocalStorage.set("popup-lyrics:translation-2rd", state);
