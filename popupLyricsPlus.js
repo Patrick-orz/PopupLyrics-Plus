@@ -53,6 +53,8 @@ function PopupLyrics() {
     const aromanize = "https://cdn.jsdelivr.net/npm/aromanize@0.1.5/aromanize.min.js";
     const openCCPath = "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.min.js";
 
+    const TinyPinyinPath = "https://creeperyang.github.io/pinyin/browser.js";
+
     const dictPath = "https:/cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict";
 
     class overallTranslator {
@@ -61,7 +63,8 @@ function PopupLyrics() {
                 ja: false,
                 ko: false,
                 zh: false,
-                en: false
+                en: false,
+                py: false
             };
 
             this.applyKuromojiFix();
@@ -79,6 +82,7 @@ function PopupLyrics() {
         }
 
         injectExternals(lang) {
+
             switch (lang?.slice(0, 2)) {
                 case "ja":
                     this.includeExternal(kuromojiPath);
@@ -89,6 +93,9 @@ function PopupLyrics() {
                     break;
                 case "zh":
                     this.includeExternal(openCCPath);
+                    break;
+                case "py":
+                    this.includeExternal(TinyPinyinPath);
                     break;
             }
 
@@ -147,6 +154,17 @@ function PopupLyrics() {
                     this.OpenCC = OpenCC;
                     this.finished.zh = true;
                     break;
+                case "py":
+                    if (this.Pinyin) return;
+                    if (typeof Pinyin === "undefined") {
+                        await overallTranslator.#sleep(50);
+                        return this.createTranslator(lang);
+                    }
+
+
+                    this.Pinyin = Pinyin;
+                    this.finished.py = true;
+                    break;
             }
         }
 
@@ -162,14 +180,13 @@ function PopupLyrics() {
             });
         }
 
-        async convertToRomaja(text, target) {
+        async convertToRomaja(text) {
             if (!this.finished.ko) {
                 await overallTranslator.#sleep(100);
-                return this.convertToRomaja(text, target);
+                return this.convertToRomaja(text);
             }
 
-            if (target === "hangul") return text;
-            return Aromanize.hangulToLatin(text, "rr-translit");
+            return this.Aromanize.hangulToLatin(text, 'rr-translit');;
         }
 
         async convertChinese(text, from, target) {
@@ -184,6 +201,31 @@ function PopupLyrics() {
             });
 
             return converter(text);
+        }
+
+        
+        async convertPinyin(text, seperator = " ") {
+            if (!this.finished.py) {
+                await overallTranslator.#sleep(100);
+                return this.convertPinyin(text, seperator);
+            }
+
+            var value = text;
+            var pinyin = '';
+            if (value) {
+              var tokens = this.Pinyin.parse(text);
+              var lastToken;
+              tokens.forEach(function (v, i) {
+                if (v.type === 2) {
+                  pinyin += pinyin && !/\n|\s/.test(lastToken.target) ? ' ' + v.target.toLowerCase() : v.target.toLowerCase();
+                } else {
+                  pinyin += (lastToken && lastToken.type === 2 ? ' ' : '') + v.target;
+                }
+                lastToken = v;
+              });
+            }
+
+            return pinyin;
         }
 
         /**
@@ -709,7 +751,6 @@ function PopupLyrics() {
                 if (userConfigs.translation2rd == 3) {//Romaji
 
                     dataStr = await intoRomaji(data.lyrics.map(lyric => lyric.text).join("\n"));
-
                     // Reformat
                     for (let i = 0; i < data.lyrics.length; i++) {
                         // Transfer into format that PopupLyrics accept
@@ -731,8 +772,17 @@ function PopupLyrics() {
                 } else if (userConfigs.translation2rd == 1) {//English
 
                     dataStr = await intoEnglish(data.lyrics.map(lyric => lyric.text));
-
                     // Reformat
+                    for (let i = 0; i < data.lyrics.length; i++) {
+                        data.lyrics[i].text = dataStr[i];
+                    }
+                } else if (userConfigs.translation2rd == 4) {//English
+                    dataStr = await intoPinyin(data.lyrics.map(lyric => lyric.text).join("\n"));
+                    for (let i = 0; i < data.lyrics.length; i++) {
+                        data.lyrics[i].text = dataStr[i];
+                    }
+                } else if (userConfigs.translation2rd == 5) {//English
+                    dataStr = await intoRomaja(data.lyrics.map(lyric => lyric.text).join("\n"));
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
@@ -749,9 +799,7 @@ function PopupLyrics() {
     }
 
     async function intoRomaji(str) {
-        // Initialize translator
         const romajifyTranslator = new overallTranslator("ja");
-        // Romajify
         let tempStr = await romajifyTranslator.romajifyText(str);
 
         // Change translated results into list for reformatting
@@ -761,8 +809,6 @@ function PopupLyrics() {
     }
 
     async function intoEnglish(str) {
-        //Use new modded batch translation api made by me
-        console.log(str);
         const res = await fetch("https://deep-translator-api.onrender.com/google/", {
             method: "POST",
             body: JSON.stringify({
@@ -775,8 +821,37 @@ function PopupLyrics() {
         });
 
         const resStr = await res.json();
-        console.log(resStr.translation);
         return resStr.translation;
+    }
+
+    async function intoPinyin(str) {
+        try{
+            const pinyinTranslator = new overallTranslator("py");
+            let tempStr = await pinyinTranslator.convertPinyin(str);
+    
+            tempStr = tempStr.split("\n");
+    
+            return tempStr;
+        }
+        catch(e){
+            return 'OK';
+        }
+
+    }
+
+    async function intoRomaja(str) {
+        try{
+            const pinyinTranslator = new overallTranslator("ko");
+            let tempStr = await pinyinTranslator.convertToRomaja(str);
+    
+            tempStr = tempStr.split("\n");
+    
+            return tempStr;
+        }
+        catch(e){
+            return 'OK';
+        }
+
     }
 
     // simple word segmentation rules
@@ -1215,7 +1290,9 @@ button.switch.small {
                     0: "None",
                     1: "English (Google)",
                     2: "Chinese (NeteaseCN)",
-                    3: "Romaji (Kuroshiro)"
+                    3: "Romaji (Kuroshiro)",
+                    4: "Chinese Pinyin (Tiny Pinyin)",
+                    5: "Romanja (Aromanize)"
                 }, userConfigs.translation2rd, state => {
                     userConfigs.translation2rd = state;
                     LocalStorage.set("popup-lyrics:translation-2rd", state);
