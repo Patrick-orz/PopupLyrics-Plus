@@ -11,11 +11,19 @@
 
 <img width="751" alt="Screen Shot 2023-09-17 at 12 11 02 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/d5633ea9-10d7-4410-822d-01d84304774f">
 
-*Romaji translation*
+*Japanese Romaji translation*
 
 <img width="751" alt="Screen Shot 2023-09-17 at 12 11 14 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/05885cad-e681-4dd9-be57-1bed21ac8752">
 
 *Original*
+
+<img width="682" alt="Screen Shot 2024-04-20 at 11 44 41 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/bcabf2fb-c18d-4a87-aed6-1997bca08e4f">
+
+*Chinese PinYin translation*
+
+<img width="682" alt="Screen Shot 2024-04-20 at 11 46 41 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/09dd6637-3250-4084-a6e3-32ecc53273e8">
+
+*Korean Romanja translation*
 
 ## ADDITIONAL Features
 - Stabler self-deployed [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi) to fetch from, allowing Netease lyrics to actually work
@@ -45,9 +53,9 @@ Spicetify installation steps are below (see [Spicetify docs](https://spicetify.a
 ```curl -fsSL https://raw.githubusercontent.com/spicetify/spicetify-cli/master/install.sh | sh```
 
 ### [Netease API](https://github.com/Binaryify/NeteaseCloudMusicApi)
-An [online deployed version](https://netease-cloud-music-api-patrick-orz.vercel.app/) is used by default.
+A still up and running [online deployed version](https://netease-cloud-music-api-patrick-orz.vercel.app/) is used by default. (RIP repo...🙏)
 
-If you would like to **self-host** for a more stable api connection, instructions are below (see [NeteaseAPI docs](https://binaryify.github.io/NeteaseCloudMusicApi/#/?id=%e5%ae%89%e8%a3%85) for more details).
+If you would like to **self-host** for a possibly more stable api connection, instructions are below (see [NeteaseAPI docs](https://binaryify.github.io/NeteaseCloudMusicApi/#/?id=%e5%ae%89%e8%a3%85) for more details).
 
 You can also deploy to vercel yourself, check the official docs for instructions.
 #### Installation
@@ -82,6 +90,7 @@ spicetify config extensions popuplyricsplus.js
 spicetify apply
 ```
 
+
 ## Usage
 
 **Have NeteaseCN service at the top to acquire the best experience!**
@@ -90,7 +99,7 @@ spicetify apply
 
 Translation options can be changed in the Options section
 
-<img width="395" alt="Screen Shot 2023-09-17 at 12 12 13 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/b16a1b42-2bd7-41e8-9c0a-6a730480ec46">
+<img width="402" alt="Screen Shot 2024-04-20 at 11 54 22 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/7d0b21a4-42ff-4a44-8087-3a58c0437f21">
 
 ## Inspiration & Words
 [misaka10843/spicetify-popupLyrics-CN](https://github.com/misaka10843/spicetify-popupLyrics-CN)
