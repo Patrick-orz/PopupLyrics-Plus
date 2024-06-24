@@ -86,7 +86,7 @@ Spicetify paths are below.
 Push extension into Spicetify and apply
 
 ```
-spicetify config extensions popuplyricsplus.js
+spicetify config extensions popupLyricsPlus.js
 spicetify apply
 ```
 
