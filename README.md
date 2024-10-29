@@ -1,5 +1,5 @@
 # PopupLyrics-Plus
-### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
+### Modded Spiceify [PopupLyrics](https://github.com/spicetify/cli/blob/main/Extensions/popupLyrics.js) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
 
 <img width="751" alt="Screen Shot 2023-09-17 at 12 09 43 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/a7acaa19-e042-463f-9f0f-1ef6d1c9999d">
 
