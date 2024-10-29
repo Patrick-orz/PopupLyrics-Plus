@@ -33,7 +33,7 @@
     - Can be slow via first translation as API has to awake. Be patient on startup!
 - Japanese romaji translation
 - Korean romaja translation ([#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))
-- Chinese PinYin translation ([#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))
+- Chinese PinYin translation ([#10](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/10))
 ## Work in Progress
 - More options in display
 - Language detection
