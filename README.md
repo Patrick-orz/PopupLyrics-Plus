@@ -1,5 +1,5 @@
 # PopupLyrics-Plus
-### Modded Spiceify [PopupLyrics](https://github.com/spicetify/spicetify-cli/tree/master/CustomApps/lyrics-plus) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
+### Modded Spiceify [PopupLyrics](https://github.com/spicetify/cli/blob/main/Extensions/popupLyrics.js) to enable translations and more! 拥有翻译和更多功能的PopupLyrics~
 
 <img width="751" alt="Screen Shot 2023-09-17 at 12 09 43 AM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/a7acaa19-e042-463f-9f0f-1ef6d1c9999d">
 
@@ -33,7 +33,7 @@
     - Can be slow via first translation as API has to awake. Be patient on startup!
 - Japanese romaji translation
 - Korean romaja translation ([#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))
-- Chinese PinYin translation ([#7](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/7))
+- Chinese PinYin translation ([#10](https://github.com/Patrick-orz/PopupLyrics-Plus/pull/10))
 ## Work in Progress
 - More options in display
 - Language detection
@@ -80,7 +80,7 @@ Download [popupLyricsPlus.js](https://github.com/Patrick-orz/PopupLyrics-Plus/bl
 Spicetify paths are below.
 |Platform|Path|
 ---------|-----
-|Windows|%appdata%\spicetify\|
+|Windows|%appdata%\spicetify|
 |Linux/MacOS|~/.config/spicetify|
 
 Push extension into Spicetify and apply

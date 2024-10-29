@@ -1,15 +1,9 @@
-//Fix branch
 // NAME: Popup Lyrics
 // AUTHOR: khanhas
 //         Netease API parser and UI from https://github.com/mantou132/Spotify-Lyrics
 // DESCRIPTION: Pop lyrics up
 
 // MODDER: patrick-orz
-// ADDED FEATURES:
-// - Additional NeteaseMusic API
-// - Netease Chinese Lyrics
-// - Google english translations
-// - Romajify
 
 /// <reference path="../globals.d.ts" />
 
@@ -19,7 +13,7 @@ if (!navigator.serviceWorker) {
     // setTimeout and setInterval are also throttled at 1 second.
     // Offload setInterval to a Worker to consistently call tick function.
     let num = null;
-    onmessage = event => {
+    onmessage = (event) => {
         if (event.data === "popup-lyric-request-update") {
             console.warn("popup-lyric-request-update");
             num = setInterval(() => postMessage("popup-lyric-update-ui"), 16.66);
@@ -41,20 +35,24 @@ function PopupLyrics() {
     }
 
     const worker = new Worker("./extensions/popupLyrics.js");
-    worker.onmessage = event => {
+    worker.onmessage = (event) => {
         if (event.data === "popup-lyric-update-ui") {
             tick(userConfigs);
         }
     };
 
     /* TRANSLATOR */
-    const kuroshiroPath = "https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js";
-    const kuromojiPath = "https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js";
-    const aromanize = "https://cdn.jsdelivr.net/npm/aromanize@0.1.5/aromanize.min.js";
-    const openCCPath = "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.min.js";
+    const kuroshiroPath =
+        "https://cdn.jsdelivr.net/npm/kuroshiro@1.2.0/dist/kuroshiro.min.js";
+    const kuromojiPath =
+        "https://cdn.jsdelivr.net/npm/kuroshiro-analyzer-kuromoji@1.1.0/dist/kuroshiro-analyzer-kuromoji.min.js";
+    const aromanize =
+        "https://cdn.jsdelivr.net/npm/aromanize@0.1.5/aromanize.min.js";
+    const openCCPath =
+        "https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.min.js";
 
-    const TinyPinyinPath = "https://creeperyang.github.io/pinyin/browser.js";
-
+    // const TinyPinyinPath = "https://creeperyang.github.io/pinyin/browser.js";
+    const pinyinProPath = "https://unpkg.com/pinyin-pro@3.24.2/dist/index.js";
     const dictPath = "https:/cdn.jsdelivr.net/npm/kuromoji@0.1.2/dict";
 
     class overallTranslator {
@@ -64,7 +62,7 @@ function PopupLyrics() {
                 ko: false,
                 zh: false,
                 en: false,
-                py: false
+                py: false,
             };
 
             this.applyKuromojiFix();
@@ -82,7 +80,6 @@ function PopupLyrics() {
         }
 
         injectExternals(lang) {
-
             switch (lang?.slice(0, 2)) {
                 case "ja":
                     this.includeExternal(kuromojiPath);
@@ -95,10 +92,10 @@ function PopupLyrics() {
                     this.includeExternal(openCCPath);
                     break;
                 case "py":
-                    this.includeExternal(TinyPinyinPath);
+                    // this.includeExternal(TinyPinyinPath);
+                    this.includeExternal(pinyinProPath);
                     break;
             }
-
         }
 
         /**
@@ -108,7 +105,7 @@ function PopupLyrics() {
         applyKuromojiFix() {
             if (typeof XMLHttpRequest.prototype.realOpen !== "undefined") return;
             XMLHttpRequest.prototype.realOpen = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function(method, url, bool) {
+            XMLHttpRequest.prototype.open = function (method, url, bool) {
                 if (url.indexOf(dictPath.replace("https://", "https:/")) === 0) {
                     this.realOpen(method, url.replace("https:/", "https://"), bool);
                 } else {
@@ -121,14 +118,17 @@ function PopupLyrics() {
             switch (lang.slice(0, 2)) {
                 case "ja":
                     if (this.kuroshiro) return;
-                    if (typeof Kuroshiro === "undefined" || typeof KuromojiAnalyzer === "undefined") {
+                    if (
+                        typeof Kuroshiro === "undefined" ||
+                        typeof KuromojiAnalyzer === "undefined"
+                    ) {
                         await overallTranslator.#sleep(50);
                         return this.createTranslator(lang);
                     }
 
                     this.kuroshiro = new Kuroshiro.default();
                     this.kuroshiro.init(new KuromojiAnalyzer({ dictPath })).then(
-                        function() {
+                        function () {
                             this.finished.ja = true;
                         }.bind(this)
                     );
@@ -155,14 +155,23 @@ function PopupLyrics() {
                     this.finished.zh = true;
                     break;
                 case "py":
-                    if (this.Pinyin) return;
-                    if (typeof Pinyin === "undefined") {
+                    // if (this.Pinyin) return;
+                    // if (typeof Pinyin === "undefined") {
+                    //   await overallTranslator.#sleep(50);
+                    //   return this.createTranslator(lang);
+                    // }
+
+                    // this.Pinyin = Pinyin;
+                    // this.finished.py = true;
+                    // break;
+
+                    if (this.pinyinPro) return;
+                    if (typeof pinyinPro === "undefined") {
                         await overallTranslator.#sleep(50);
                         return this.createTranslator(lang);
                     }
 
-
-                    this.Pinyin = Pinyin;
+                    this.pinyinPro = pinyinPro;
                     this.finished.py = true;
                     break;
             }
@@ -176,7 +185,7 @@ function PopupLyrics() {
 
             return this.kuroshiro.convert(text, {
                 to: target,
-                mode: mode
+                mode: mode,
             });
         }
 
@@ -186,7 +195,7 @@ function PopupLyrics() {
                 return this.convertToRomaja(text);
             }
 
-            return this.Aromanize.hangulToLatin(text, 'rr-translit');;
+            return this.Aromanize.hangulToLatin(text, "rr-translit");
         }
 
         async convertChinese(text, from, target) {
@@ -197,12 +206,11 @@ function PopupLyrics() {
 
             const converter = this.OpenCC.Converter({
                 from: from,
-                to: target
+                to: target,
             });
 
             return converter(text);
         }
-
 
         async convertPinyin(text, seperator = " ") {
             if (!this.finished.py) {
@@ -211,21 +219,44 @@ function PopupLyrics() {
             }
 
             var value = text;
-            var pinyin = '';
+            // var pinyin = "";
+            // if (value) {
+            //   var tokens = this.Pinyin.parse(text);
+            //   var lastToken;
+            //   tokens.forEach(function (v, i) {
+            //     if (v.type === 2) {
+            //       pinyin +=
+            //         pinyin && !/\n|\s/.test(lastToken.target)
+            //           ? " " + v.target.toLowerCase()
+            //           : v.target.toLowerCase();
+            //     } else {
+            //       pinyin += (lastToken && lastToken.type === 2 ? " " : "") + v.target;
+            //     }
+            //     lastToken = v;
+            //   });
+            // }
+
+            var pinyinText = "";
             if (value) {
-                var tokens = this.Pinyin.parse(text);
-                var lastToken;
-                tokens.forEach(function(v, i) {
-                    if (v.type === 2) {
-                        pinyin += pinyin && !/\n|\s/.test(lastToken.target) ? ' ' + v.target.toLowerCase() : v.target.toLowerCase();
-                    } else {
-                        pinyin += (lastToken && lastToken.type === 2 ? ' ' : '') + v.target;
-                    }
-                    lastToken = v;
-                });
+                var { pinyin } = this.pinyinPro;
+                // var tokens = this.Pinyin.parse(text);
+                pinyinText = pinyin(value);
+                // var lastToken;
+                // tokens.forEach(function (v, i) {
+                //   if (v.type === 2) {
+                //     pinyin +=
+                //       pinyin && !/\n|\s/.test(lastToken.target)
+                //         ? " " + v.target.toLowerCase()
+                //         : v.target.toLowerCase();
+                //   } else {
+                //     pinyin += (lastToken && lastToken.type === 2 ? " " : "") + v.target;
+                //   }
+                //   lastToken = v;
+                // });
             }
 
-            return pinyin;
+            // return pinyin;
+            return pinyinText;
         }
 
         /**
@@ -235,7 +266,7 @@ function PopupLyrics() {
          * @returns {Promise<void>}
          */
         static async #sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+            return new Promise((resolve) => setTimeout(resolve, ms));
         }
     }
     // Taken from Lyrics+
@@ -266,32 +297,35 @@ function PopupLyrics() {
         removeExtraInfo(s) {
             return (
                 s
-                    .replace(/-\s+(feat|with|prod).*/i, "")
-                    .replace(/(\(|\[)(feat|with|prod)\.?\s+.*(\)|\])$/i, "")
-                    .replace(/\s-\s.*/, "")
-                    .trim() || s
+                .replace(/-\s+(feat|with|prod).*/i, "")
+                .replace(/(\(|\[)(feat|with|prod)\.?\s+.*(\)|\])$/i, "")
+                .replace(/\s-\s.*/, "")
+                .trim() || s
             );
         },
 
         capitalize(s) {
-            return s.replace(/^(\w)/, $1 => $1.toUpperCase());
-        }
+            return s.replace(/^(\w)/, ($1) => $1.toUpperCase());
+        },
     };
 
     const LyricProviders = {
         async fetchSpotify(info) {
-            const baseURL = "wg://lyrics/v1/track/";
+            const baseURL = "https://spclient.wg.spotify.com/color-lyrics/v2/track/";
             const id = info.uri.split(":")[2];
-            const body = await CosmosAsync.get(baseURL + id);
+            const body = await CosmosAsync.get(
+                `${baseURL + id}?format=json&vocalRemoval=false&market=from_token`
+            );
 
-            const lines = body.lines;
-            if (!lines || !lines.length || typeof lines[0].time !== "number") {
+            const lyricsData = body.lyrics;
+            if (!lyricsData || lyricsData.syncType !== "LINE_SYNCED") {
                 return { error: "No lyrics" };
             }
 
-            const lyrics = lines.map(a => ({
-                startTime: a.time / 1000,
-                text: a.words.map(b => b.string).join(" ")
+            const lines = lyricsData.lines;
+            const lyrics = lines.map((a) => ({
+                startTime: a.startTimeMs / 1000,
+                text: a.words,
             }));
 
             return { lyrics };
@@ -311,19 +345,19 @@ function PopupLyrics() {
                 track_spotify_id: info.uri,
                 q_duration: durr,
                 f_subtitle_length: Math.floor(durr),
-                usertoken: userConfigs.services.musixmatch.token
+                usertoken: userConfigs.services.musixmatch.token,
             };
 
             const finalURL =
                 baseURL +
                 Object.keys(params)
-                    .map(key => `${key}=${encodeURIComponent(params[key])}`)
-                    .join("&");
+                .map((key) => `${key}=${encodeURIComponent(params[key])}`)
+                .join("&");
 
             try {
                 let body = await CosmosAsync.get(finalURL, null, {
                     authority: "apic-desktop.musixmatch.com",
-                    cookie: "x-mxm-token-guid="
+                    cookie: "x-mxm-token-guid=",
                 });
 
                 body = body.message.body.macro_calls;
@@ -331,23 +365,29 @@ function PopupLyrics() {
                 if (body["matcher.track.get"].message.header.status_code !== 200) {
                     const head = body["matcher.track.get"].message.header;
                     return {
-                        error: `Requested error: ${head.status_code}: ${head.hint} - ${head.mode}`
+                        error: `Requested error: ${head.status_code}: ${head.hint} - ${head.mode}`,
                     };
                 }
 
                 const meta = body["matcher.track.get"].message.body;
                 const hasSynced = meta.track.has_subtitles;
-                const isRestricted = body["track.lyrics.get"].message.header.status_code === 200 && body["track.lyrics.get"].message.body.lyrics.restricted;
+                const isRestricted =
+                    body["track.lyrics.get"].message.header.status_code === 200 &&
+                    body["track.lyrics.get"].message.body.lyrics.restricted;
                 const isInstrumental = meta.track.instrumental;
 
-                if (isRestricted) return { error: "Unfortunately we're not authorized to show these lyrics." };
+                if (isRestricted)
+                    return {
+                        error: "Unfortunately we're not authorized to show these lyrics.",
+                    };
                 if (isInstrumental) return { error: "Instrumental" };
                 if (hasSynced) {
-                    const subtitle = body["track.subtitles.get"].message.body.subtitle_list[0].subtitle;
+                    const subtitle =
+                        body["track.subtitles.get"].message.body.subtitle_list[0].subtitle;
 
-                    const lyrics = JSON.parse(subtitle.subtitle_body).map(line => ({
+                    const lyrics = JSON.parse(subtitle.subtitle_body).map((line) => ({
                         text: line.text || "♪",
-                        startTime: line.time.total
+                        startTime: line.time.total,
                     }));
                     return { lyrics };
                 }
@@ -359,26 +399,43 @@ function PopupLyrics() {
         },
 
         async fetchNetease(info) {
-            const searchURL = "https://music.xianqiao.wang/neteaseapiv2/search?limit=10&type=1&keywords=";
+            const searchURL =
+                "https://music.xianqiao.wang/neteaseapiv2/search?limit=10&type=1&keywords=";
             const lyricURL = "https://music.xianqiao.wang/neteaseapiv2/lyric?id=";
             const requestHeader = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0"
+                "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0",
             };
 
-            const cleanTitle = LyricUtils.removeExtraInfo(LyricUtils.normalize(info.title));
-            const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`);
+            const cleanTitle = LyricUtils.removeExtraInfo(
+                LyricUtils.normalize(info.title)
+            );
+            const finalURL =
+                searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`);
 
-            const searchResults = await CosmosAsync.get(finalURL, null, requestHeader);
+            const searchResults = await CosmosAsync.get(
+                finalURL,
+                null,
+                requestHeader
+            );
             const items = searchResults.result.songs;
             if (!items || !items.length) {
                 return { error: "Cannot find track" };
             }
 
             const album = LyricUtils.capitalize(info.album);
-            const itemId = items.findIndex(val => LyricUtils.capitalize(val.album.name) === album || Math.abs(info.duration - val.duration) < 1000);
+            const itemId = items.findIndex(
+                (val) =>
+                LyricUtils.capitalize(val.album.name) === album ||
+                Math.abs(info.duration - val.duration) < 1000
+            );
             if (itemId === -1) return { error: "Cannot find track" };
 
-            const meta = await CosmosAsync.get(lyricURL + items[itemId].id, null, requestHeader);
+            const meta = await CosmosAsync.get(
+                lyricURL + items[itemId].id,
+                null,
+                requestHeader
+            );
             let lyricStr = meta.lrc;
 
             if (!lyricStr || !lyricStr.lyric) {
@@ -390,14 +447,17 @@ function PopupLyrics() {
                 "\\s?作?\\s*词|\\s?作?\\s*曲|\\s?编\\s*曲?|\\s?监\\s*制?",
                 ".*编写|.*和音|.*和声|.*合声|.*提琴|.*录|.*工程|.*工作室|.*设计|.*剪辑|.*制作|.*发行|.*出品|.*后期|.*混音|.*缩混",
                 "原唱|翻唱|题字|文案|海报|古筝|二胡|钢琴|吉他|贝斯|笛子|鼓|弦乐",
-                "lrc|publish|vocal|guitar|program|produce|write|mix"
+                "lrc|publish|vocal|guitar|program|produce|write|mix",
             ];
-            const otherInfoRegexp = new RegExp(`^(${otherInfoKeys.join("|")}).*(:|：)`, "i");
+            const otherInfoRegexp = new RegExp(
+                `^(${otherInfoKeys.join("|")}).*(:|：)`,
+                "i"
+            );
 
-            const lines = lyricStr.split(/\r?\n/).map(line => line.trim());
+            const lines = lyricStr.split(/\r?\n/).map((line) => line.trim());
             let noLyrics = false;
             const lyrics = lines
-                .flatMap(line => {
+                .flatMap((line) => {
                     // ["[ar:Beyond]"]
                     // ["[03:10]"]
                     // ["[03:10]", "永远高唱我歌"]
@@ -407,19 +467,28 @@ function PopupLyrics() {
                     if (!matchResult.length || matchResult.length === 1) {
                         return;
                     }
-                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    const textIndex = matchResult.findIndex(
+                        (slice) => !slice.endsWith("]")
+                    );
                     let text = "";
                     if (textIndex > -1) {
                         text = matchResult.splice(textIndex, 1)[0];
                         text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
                     }
                     if (text === "纯音乐, 请欣赏") noLyrics = true;
-                    return matchResult.map(slice => {
+                    return matchResult.map((slice) => {
                         const result = {};
                         const matchResult = slice.match(/[^\[\]]+/g);
                         const [key, value] = matchResult[0].split(":") || [];
-                        const [min, sec] = [parseFloat(key), parseFloat(value)];
-                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                        const [min, sec] = [
+                            Number.parseFloat(key),
+                            Number.parseFloat(value),
+                        ];
+                        if (
+                            !Number.isNaN(min) &&
+                            !Number.isNaN(sec) &&
+                            !otherInfoRegexp.test(text)
+                        ) {
                             result.startTime = min * 60 + sec;
                             result.text = text || "♪";
                             return result;
@@ -451,31 +520,48 @@ function PopupLyrics() {
         // Fetch from NeteaseMusicAPI and store chinese lyrics
         async fetchNeteaseCN(info) {
             // URL of deployed Netease API, used for fetching
-            const searchURL = "https://netease-cloud-music-api-patrick-orz.vercel.app/cloudsearch?type=1&keywords=";
-            const lyricURL = "https://netease-cloud-music-api-patrick-orz.vercel.app/lyric?id=";
+            const searchURL =
+                "https://netease-cloud-music-api-patrick-orz.vercel.app/cloudsearch?type=1&keywords=";
+            const lyricURL =
+                "https://netease-cloud-music-api-patrick-orz.vercel.app/lyric?id=";
             const requestHeader = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0"
+                "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:93.0) Gecko/20100101 Firefox/93.0",
             };
 
-            const cleanTitle = LyricUtils.removeExtraInfo(LyricUtils.normalize(info.title));
-            const finalURL = searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`);
+            const cleanTitle = LyricUtils.removeExtraInfo(
+                LyricUtils.normalize(info.title)
+            );
+            const finalURL =
+                searchURL + encodeURIComponent(`${cleanTitle} ${info.artist}`);
 
-            const searchResults = await CosmosAsync.get(finalURL, null, requestHeader);
+            const searchResults = await CosmosAsync.get(
+                finalURL,
+                null,
+                requestHeader
+            );
             const items = searchResults.result.songs;
             if (!items || !items.length) {
                 return { error: "Cannot find track" };
             }
 
-
             const album = LyricUtils.capitalize(info.album);
-            const itemId = items.findIndex(val => LyricUtils.capitalize(val.name) === album || Math.abs(info.duration - val.dt) < 1000);
+            const itemId = items.findIndex(
+                (val) =>
+                LyricUtils.capitalize(val.name) === album ||
+                Math.abs(info.duration - val.dt) < 1000
+            );
             if (itemId === -1) return { error: "Cannot find track" };
 
-            const meta = await CosmosAsync.get(lyricURL + items[itemId].id, null, requestHeader);
+            const meta = await CosmosAsync.get(
+                lyricURL + items[itemId].id,
+                null,
+                requestHeader
+            );
 
             // Store netease lyrics
-            let ogLyricStr = meta.lrc;// Untranslated lyrics
-            let tLyricStr = meta.tlyric;// Translated lyrics
+            let ogLyricStr = meta.lrc; // Untranslated lyrics
+            let tLyricStr = meta.tlyric; // Translated lyrics
 
             if (!ogLyricStr || !ogLyricStr.lyric) {
                 return { error: "No lyrics" };
@@ -489,15 +575,18 @@ function PopupLyrics() {
                 "\\s?作?\\s*词|\\s?作?\\s*曲|\\s?编\\s*曲?|\\s?监\\s*制?",
                 ".*编写|.*和音|.*和声|.*合声|.*提琴|.*录|.*工程|.*工作室|.*设计|.*剪辑|.*制作|.*发行|.*出品|.*后期|.*混音|.*缩混",
                 "原唱|翻唱|题字|文案|海报|古筝|二胡|钢琴|吉他|贝斯|笛子|鼓|弦乐",
-                "lrc|publish|vocal|guitar|program|produce|write|mix"
+                "lrc|publish|vocal|guitar|program|produce|write|mix",
             ];
-            const otherInfoRegexp = new RegExp(`^(${otherInfoKeys.join("|")}).*(:|：)`, "i");
+            const otherInfoRegexp = new RegExp(
+                `^(${otherInfoKeys.join("|")}).*(:|：)`,
+                "i"
+            );
 
             // Parse OG
-            lines = ogLyricStr.split(/\r?\n/).map(line => line.trim());
+            lines = ogLyricStr.split(/\r?\n/).map((line) => line.trim());
             let noOgLyrics = false;
             const ogLyrics = lines
-                .flatMap(line => {
+                .flatMap((line) => {
                     // ["[ar:Beyond]"]
                     // ["[03:10]"]
                     // ["[03:10]", "永远高唱我歌"]
@@ -507,19 +596,25 @@ function PopupLyrics() {
                     if (!matchResult.length || matchResult.length === 1) {
                         return;
                     }
-                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    const textIndex = matchResult.findIndex(
+                        (slice) => !slice.endsWith("]")
+                    );
                     let text = "";
                     if (textIndex > -1) {
                         text = matchResult.splice(textIndex, 1)[0];
                         text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
                     }
                     if (text === "纯音乐, 请欣赏") noOgLyrics = true;
-                    return matchResult.map(slice => {
+                    return matchResult.map((slice) => {
                         const result = {};
                         const matchResult = slice.match(/[^\[\]]+/g);
                         const [key, value] = matchResult[0].split(":") || [];
                         const [min, sec] = [parseFloat(key), parseFloat(value)];
-                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                        if (
+                            !Number.isNaN(min) &&
+                            !Number.isNaN(sec) &&
+                            !otherInfoRegexp.test(text)
+                        ) {
                             result.startTime = min * 60 + sec;
                             result.text = text || "♪";
                             return result;
@@ -540,27 +635,33 @@ function PopupLyrics() {
             console.log(ogLyrics);
 
             // Parse Translated
-            lines = tLyricStr.split(/\r?\n/).map(line => line.trim());
+            lines = tLyricStr.split(/\r?\n/).map((line) => line.trim());
             let noTLyrics = false;
             const tLyrics = lines
-                .flatMap(line => {
+                .flatMap((line) => {
                     const matchResult = line.match(/(\[.*?\])|([^\[\]]+)/g) || [line];
                     if (!matchResult.length || matchResult.length === 1) {
                         return;
                     }
-                    const textIndex = matchResult.findIndex(slice => !slice.endsWith("]"));
+                    const textIndex = matchResult.findIndex(
+                        (slice) => !slice.endsWith("]")
+                    );
                     let text = "";
                     if (textIndex > -1) {
                         text = matchResult.splice(textIndex, 1)[0];
                         text = LyricUtils.capitalize(LyricUtils.normalize(text, false));
                     }
                     if (text === "纯音乐, 请欣赏") noTLyrics = true;
-                    return matchResult.map(slice => {
+                    return matchResult.map((slice) => {
                         const result = {};
                         const matchResult = slice.match(/[^\[\]]+/g);
                         const [key, value] = matchResult[0].split(":") || [];
                         const [min, sec] = [parseFloat(key), parseFloat(value)];
-                        if (!Number.isNaN(min) && !Number.isNaN(sec) && !otherInfoRegexp.test(text)) {
+                        if (
+                            !Number.isNaN(min) &&
+                            !Number.isNaN(sec) &&
+                            !otherInfoRegexp.test(text)
+                        ) {
                             result.startTime = min * 60 + sec;
                             result.text = text || "♪";
                             return result;
@@ -578,8 +679,6 @@ function PopupLyrics() {
                     return a.startTime - b.startTime;
                 })
                 .filter(Boolean);
-            console.log(tLyrics);
-
             // Check & Output
             if (noOgLyrics) {
                 return { error: "No lyrics" };
@@ -590,12 +689,12 @@ function PopupLyrics() {
 
             let lyrics;
             if (userConfigs.translation2rd == 2)
-                lyrics = (noTLyrics || !tLyrics.length) ? ogLyrics : tLyrics;
-            else
-                lyrics = ogLyrics;
+                lyrics = noTLyrics || !tLyrics.length ? ogLyrics : tLyrics;
+            else lyrics = ogLyrics;
 
             return { lyrics };
         },
+<<<<<<< HEAD
 
         async fetchLrclib(info) {
             const baseURL = "https://lrclib.net/api/get";
@@ -643,6 +742,8 @@ function PopupLyrics() {
             });
             return { lyrics };
         },
+=======
+>>>>>>> 7f89561f176927598d8d3f456e6a4c0ce051ff31
     };
 
     const userConfigs = {
@@ -652,48 +753,59 @@ function PopupLyrics() {
         translation2rd: Number(LocalStorage.get("popup-lyrics:translation-2rd")),
         fontSize: Number(LocalStorage.get("popup-lyrics:font-size")),
         blurSize: Number(LocalStorage.get("popup-lyrics:blur-size")),
-        fontFamily: LocalStorage.get("popup-lyrics:font-family") || "spotify-circular",
+        fontFamily:
+        LocalStorage.get("popup-lyrics:font-family") || "spotify-circular",
         ratio: LocalStorage.get("popup-lyrics:ratio") || "11",
         delay: Number(LocalStorage.get("popup-lyrics:delay")),
         services: {
             neteaseCN: {
                 on: boolLocalStorage("popup-lyrics:services:netease:on"),
                 call: LyricProviders.fetchNeteaseCN,
-                desc: "NeteaseAPI OG & Chinese lyrics fetch through self-deployed API"
+                desc: "NeteaseAPI OG & Chinese lyrics fetch through self-deployed API",
             },
             netease: {
                 on: boolLocalStorage("popup-lyrics:services:netease:on"),
                 call: LyricProviders.fetchNetease,
-                desc: "Crowdsourced lyrics provider ran by Chinese developers and users."
+                desc: "Crowdsourced lyrics provider ran by Chinese developers and users.",
             },
             musixmatch: {
                 on: boolLocalStorage("popup-lyrics:services:musixmatch:on"),
                 call: LyricProviders.fetchMusixmatch,
                 desc: `Fully compatible with Spotify. Requires a token that can be retrieved from the official Musixmatch app. Follow instructions on <a href="https://spicetify.app/docs/faq#sometimes-popup-lyrics-andor-lyrics-plus-seem-to-not-work">Spicetify Docs</a>.`,
-                token: LocalStorage.get("popup-lyrics:services:musixmatch:token") || "2005218b74f939209bda92cb633c7380612e14cb7fe92dcd6a780f"
+                token:
+                LocalStorage.get("popup-lyrics:services:musixmatch:token") ||
+                "2005218b74f939209bda92cb633c7380612e14cb7fe92dcd6a780f",
             },
             spotify: {
                 on: boolLocalStorage("popup-lyrics:services:spotify:on"),
                 call: LyricProviders.fetchSpotify,
+<<<<<<< HEAD
                 desc: "Lyrics sourced from official Spotify API."
             },
             lrclib: {
                 on: boolLocalStorage("popup-lyrics:services:lrclib:on"),
                 call: LyricProviders.fetchLrclib,
                 desc: "Lyrics sourced from lrclib.net. Supports both synced and unsynced lyrics. LRCLIB is a free and open-source lyrics provider.",
+=======
+                desc: "Lyrics sourced from official Spotify API.",
+>>>>>>> 7f89561f176927598d8d3f456e6a4c0ce051ff31
             },
         },
-        servicesOrder: []
+        servicesOrder: [],
     };
 
-    userConfigs.fontSize = userConfigs.fontSize ? Number(userConfigs.fontSize) : 46;
+    userConfigs.fontSize = userConfigs.fontSize
+        ? Number(userConfigs.fontSize)
+        : 46;
     try {
         const rawServicesOrder = LocalStorage.get("popup-lyrics:services-order");
         userConfigs.servicesOrder = JSON.parse(rawServicesOrder);
 
         if (!Array.isArray(userConfigs.servicesOrder)) throw "";
 
-        userConfigs.servicesOrder = userConfigs.servicesOrder.filter(s => userConfigs.services[s]); // Remove obsoleted services
+        userConfigs.servicesOrder = userConfigs.servicesOrder.filter(
+            (s) => userConfigs.services[s]
+        ); // Remove obsoleted services
 
         const allServices = Object.keys(userConfigs.services);
         if (userConfigs.servicesOrder.length !== allServices.length) {
@@ -702,11 +814,17 @@ function PopupLyrics() {
                     userConfigs.servicesOrder.push(s);
                 }
             }
-            LocalStorage.set("popup-lyrics:services-order", JSON.stringify(userConfigs.servicesOrder));
+            LocalStorage.set(
+                "popup-lyrics:services-order",
+                JSON.stringify(userConfigs.servicesOrder)
+            );
         }
     } catch {
         userConfigs.servicesOrder = Object.keys(userConfigs.services);
-        LocalStorage.set("popup-lyrics:services-order", JSON.stringify(userConfigs.servicesOrder));
+        LocalStorage.set(
+            "popup-lyrics:services-order",
+            JSON.stringify(userConfigs.servicesOrder)
+        );
     }
 
     const lyricVideo = document.createElement("video");
@@ -744,13 +862,17 @@ function PopupLyrics() {
     lyricCtx.fillRect(0, 0, 1, 1);
     lyricVideo.play();
 
-    const button = new Spicetify.Topbar.Button("Popup Lyrics Plus", "lyrics", () => {
-        if (!lyricVideoIsOpen) {
-            lyricVideo.requestPictureInPicture();
-        } else {
-            document.exitPictureInPicture();
+    const button = new Spicetify.Topbar.Button(
+        "Popup Lyrics Plus",
+        "lyrics",
+        () => {
+            if (!lyricVideoIsOpen) {
+                lyricVideo.requestPictureInPicture();
+            } else {
+                document.exitPictureInPicture();
+            }
         }
-    });
+    );
     button.element.oncontextmenu = openConfig;
 
     const coverCanvas = document.createElement("canvas");
@@ -760,7 +882,13 @@ function PopupLyrics() {
 
     const largeImage = new Image();
     largeImage.onload = () => {
-        coverCtx.drawImage(largeImage, 0, 0, coverCtx.canvas.width, coverCtx.canvas.width);
+        coverCtx.drawImage(
+            largeImage,
+            0,
+            0,
+            coverCtx.canvas.width,
+            coverCtx.canvas.width
+        );
     };
     userConfigs.backgroundImage = coverCanvas;
 
@@ -775,7 +903,10 @@ function PopupLyrics() {
 
         const meta = Player.data.item.metadata;
 
-        if (!Spicetify.URI.isTrack(Player.data.item.uri) && !Spicetify.URI.isLocalTrack(Player.data.item.uri)) {
+        if (
+            !Spicetify.URI.isTrack(Player.data.item.uri) &&
+            !Spicetify.URI.isLocalTrack(Player.data.item.uri)
+        ) {
             return;
         }
 
@@ -785,7 +916,7 @@ function PopupLyrics() {
             album: meta.album_title,
             artist: meta.artist_name,
             title: meta.title,
-            uri: Player.data.item.uri
+            uri: Player.data.item.uri,
         };
 
         for (const name of userConfigs.servicesOrder) {
@@ -800,9 +931,12 @@ function PopupLyrics() {
                 let dataStr;
 
                 // Translate into Eng/Romaji
-                if (userConfigs.translation2rd == 3) {//Romaji
+                if (userConfigs.translation2rd == 3) {
+                    //Romaji
 
-                    dataStr = await intoRomaji(data.lyrics.map(lyric => lyric.text).join("\n"));
+                    dataStr = await intoRomaji(
+                        data.lyrics.map((lyric) => lyric.text).join("\n")
+                    );
                     // Reformat
                     for (let i = 0; i < data.lyrics.length; i++) {
                         // Transfer into format that PopupLyrics accept
@@ -811,30 +945,37 @@ function PopupLyrics() {
                         // '"…\-!?()[\]:;\/&*+%$#@~^,.。
                         dataStr[i] = dataStr[i].replace(
                             /\s*[\'"…\-!?()[\]:;\/&*+%$#@~^,.。]\s*/g,
-                            function(match) {
-                                return match.substring(1, match.length - 1);
-                            }
+                                function (match) {
+                                    return match.substring(1, match.length - 1);
+                                }
                         );
 
                         //Replace consecutive spaces with one space
-                        dataStr[i] = dataStr[i].replace(/\s+/g, ' ');
+                        dataStr[i] = dataStr[i].replace(/\s+/g, " ");
 
                         data.lyrics[i].text = dataStr[i];
                     }
-                } else if (userConfigs.translation2rd == 1) {//English
+                } else if (userConfigs.translation2rd == 1) {
+                    //English
 
-                    dataStr = await intoEnglish(data.lyrics.map(lyric => lyric.text));
+                    dataStr = await intoEnglish(data.lyrics.map((lyric) => lyric.text));
                     // Reformat
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
-                } else if (userConfigs.translation2rd == 4) {//Pinyin
-                    dataStr = await intoPinyin(data.lyrics.map(lyric => lyric.text).join("\n"));
+                } else if (userConfigs.translation2rd == 4) {
+                    //Pinyin
+                    dataStr = await intoPinyin(
+                        data.lyrics.map((lyric) => lyric.text).join("\n")
+                    );
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
-                } else if (userConfigs.translation2rd == 5) {//Romaja
-                    dataStr = await intoRomaja(data.lyrics.map(lyric => lyric.text).join("\n"));
+                } else if (userConfigs.translation2rd == 5) {
+                    //Romaja
+                    dataStr = await intoRomaja(
+                        data.lyrics.map((lyric) => lyric.text).join("\n")
+                    );
                     for (let i = 0; i < data.lyrics.length; i++) {
                         data.lyrics[i].text = dataStr[i];
                     }
@@ -859,23 +1000,25 @@ function PopupLyrics() {
             tempStr = tempStr.split("\n");
 
             return tempStr;
-        }
-        catch (e) {
-            return 'OK';
+        } catch (e) {
+            return "OK";
         }
     }
 
     async function intoEnglish(str) {
-        const res = await fetch("https://deep-translator-api.onrender.com/google/", {
-            method: "POST",
-            body: JSON.stringify({
-                text: str,
-                source: "auto",
-                target: "en",
-            }),
-            headers: { "Content-Type": "application/json" },
-            mode: "cors",
-        });
+        const res = await fetch(
+            "https://deep-translator-api.onrender.com/google/",
+            {
+                method: "POST",
+                body: JSON.stringify({
+                    text: str,
+                    source: "auto",
+                    target: "en",
+                }),
+                headers: { "Content-Type": "application/json" },
+                mode: "cors",
+            }
+        );
 
         const resStr = await res.json();
         return resStr.translation;
@@ -889,11 +1032,9 @@ function PopupLyrics() {
             tempStr = tempStr.split("\n");
 
             return tempStr;
+        } catch (e) {
+            return "OK";
         }
-        catch (e) {
-            return 'OK';
-        }
-
     }
 
     async function intoRomaja(str) {
@@ -904,17 +1045,17 @@ function PopupLyrics() {
             tempStr = tempStr.split("\n");
 
             return tempStr;
+        } catch (e) {
+            return "OK";
         }
-        catch (e) {
-            return 'OK';
-        }
-
     }
 
     // simple word segmentation rules
     function getWords(str) {
         const result = [];
-        const words = str.split(/(\p{sc=Han}|\p{sc=Katakana}|\p{sc=Hiragana}|\p{sc=Hang}|\p{gc=Punctuation})|\s+/gu);
+        const words = str.split(
+            /(\p{sc=Han}|\p{sc=Katakana}|\p{sc=Hiragana}|\p{sc=Hang}|\p{gc=Punctuation})|\s+/gu
+        );
         let tempWord = "";
         for (let word of words) {
             word ??= " ";
@@ -922,354 +1063,403 @@ function PopupLyrics() {
                 if (tempWord && /(“|')$/.test(tempWord) && word !== " ") {
                     // End of line not allowed
                     tempWord += word;
-                } else if (/(,|\.|\?|:|;|'|，|。|？|：|；|”)/.test(word) && tempWord !== " ") {
-                    // Start of line not allowed
-                    tempWord += word;
-                } else {
-                    if (tempWord) result.push(tempWord);
-                    tempWord = word;
-                }
-            }
+                } else if (
+                    /(,|\.|\?|:|;|'|，|。|？|：|；|”)/.test(word) &&
+                        tempWord !== " "
+                    ) {
+                        // Start of line not allowed
+                        tempWord += word;
+                    } else {
+                        if (tempWord) result.push(tempWord);
+                        tempWord = word;
+                    }
         }
-        if (tempWord) result.push(tempWord);
-        return result;
     }
+    if (tempWord) result.push(tempWord);
+    return result;
+}
 
-    function drawParagraph(ctx, str, options) {
-        let actualWidth = 0;
-        const maxWidth = ctx.canvas.width - options.left - options.right;
-        const words = getWords(str);
-        const lines = [];
-        const measures = [];
-        let tempLine = "";
-        let textMeasures = ctx.measureText("");
-        for (let i = 0; i < words.length; i++) {
-            const word = words[i];
-            const line = tempLine + word;
-            const mea = ctx.measureText(line);
-            const isSpace = /\s/.test(word);
-            if (mea.width > maxWidth && tempLine && !isSpace) {
-                actualWidth = Math.max(actualWidth, textMeasures.width);
-                lines.push(tempLine);
-                measures.push(textMeasures);
-                tempLine = word;
-            } else {
-                tempLine = line;
-                if (!isSpace) {
-                    textMeasures = mea;
-                }
-            }
-        }
-        if (tempLine !== "") {
+function drawParagraph(ctx, str, options) {
+    let actualWidth = 0;
+    const maxWidth = ctx.canvas.width - options.left - options.right;
+    const words = getWords(str);
+    const lines = [];
+    const measures = [];
+    let tempLine = "";
+    let textMeasures = ctx.measureText("");
+    for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const line = tempLine + word;
+        const mea = ctx.measureText(line);
+        const isSpace = /\s/.test(word);
+        if (mea.width > maxWidth && tempLine && !isSpace) {
             actualWidth = Math.max(actualWidth, textMeasures.width);
             lines.push(tempLine);
-            measures.push(ctx.measureText(tempLine));
-        }
-
-        const ascent = measures.length ? measures[0].actualBoundingBoxAscent : 0;
-        const body = measures.length ? options.lineHeight * (measures.length - 1) : 0;
-        const descent = measures.length ? measures[measures.length - 1].actualBoundingBoxDescent : 0;
-        const actualHeight = ascent + body + descent;
-
-        let startX = 0;
-        let startY = 0;
-        let translateX = 0;
-        let translateY = 0;
-        if (options.hCenter) {
-            startX = (ctx.canvas.width - actualWidth) / 2;
+            measures.push(textMeasures);
+            tempLine = word;
         } else {
-            startX = options.left + translateX;
-        }
-
-        if (options.vCenter) {
-            startY = (ctx.canvas.height - actualHeight) / 2 + ascent;
-        } else if (options.top) {
-            startY = options.top + ascent;
-        } else if (options.bottom) {
-            startY = options.bottom - descent - body;
-        }
-
-        if (typeof options.translateX === "function") {
-            translateX = options.translateX(actualWidth);
-        }
-        if (typeof options.translateX === "number") {
-            translateX = options.translateX;
-        }
-        if (typeof options.translateY === "function") {
-            translateY = options.translateY(actualHeight);
-        }
-        if (typeof options.translateY === "number") {
-            translateY = options.translateY;
-        }
-        if (!options.measure) {
-            lines.forEach((str, index) => {
-                const x = options.hCenter ? (ctx.canvas.width - measures[index].width) / 2 : startX;
-                ctx.fillText(str, x, startY + index * options.lineHeight + translateY);
-            });
-        }
-        return {
-            width: actualWidth,
-            height: actualHeight,
-            left: startX + translateX,
-            right: ctx.canvas.width - options.left - actualWidth + translateX,
-            top: startY - ascent + translateY,
-            bottom: startY + body + descent + translateY
-        };
-    }
-
-    function drawBackground(ctx, image) {
-        if (userConfigs.showCover) {
-            const { width, height } = ctx.canvas;
-            ctx.imageSmoothingEnabled = false;
-            ctx.save();
-            const blurSize = Number(userConfigs.blurSize);
-            ctx.filter = `blur(${blurSize}px)`;
-            ctx.drawImage(image, -blurSize * 2, -blurSize * 2 - (width - height) / 2, width + 4 * blurSize, width + 4 * blurSize);
-            ctx.restore();
-            ctx.fillStyle = "#000000b0";
-        } else {
-            ctx.save();
-            ctx.fillStyle = "#000000";
-        }
-
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.restore();
-    }
-
-    function drawText(ctx, text, color = "white") {
-        drawBackground(ctx, userConfigs.backgroundImage);
-        const fontSize = userConfigs.fontSize;
-        ctx.fillStyle = color;
-        ctx.font = `bold ${fontSize}px ${userConfigs.fontFamily}, sans-serif`;
-        drawParagraph(ctx, text, {
-            vCenter: true,
-            hCenter: true,
-            left: 0,
-            right: 0,
-            lineHeight: fontSize
-        });
-        ctx.restore();
-    }
-
-    let offscreenCanvas;
-    let offscreenCtx;
-    let gradient1;
-    let gradient2;
-
-    function initOffscreenCtx(ctx) {
-        if (!offscreenCtx) {
-            offscreenCanvas = document.createElement("canvas");
-            offscreenCtx = offscreenCanvas.getContext("2d");
-            gradient1 = offscreenCtx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-            gradient1.addColorStop(0.08, "transparent");
-            gradient1.addColorStop(0.15, "white");
-            gradient1.addColorStop(0.85, "white");
-            gradient1.addColorStop(0.92, "transparent");
-            gradient2 = offscreenCtx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-            gradient2.addColorStop(0.0, "white");
-            gradient2.addColorStop(0.7, "white");
-            gradient2.addColorStop(0.925, "transparent");
-        }
-        offscreenCtx.canvas.width = ctx.canvas.width;
-        offscreenCtx.canvas.height = ctx.canvas.height;
-        return {
-            offscreenCtx,
-            gradient1,
-            gradient2
-        };
-    }
-
-    // Avoid drawing again when the same
-    // Do not operate canvas again in other functions
-    let renderState;
-
-    function isEqualState(state1, state2) {
-        if (!state1 || !state2) return false;
-        return Object.keys(state1).reduce((p, c) => {
-            return p && state1[c] === state2[c];
-        }, true);
-    }
-
-    function renderLyrics(ctx, lyrics, currentTime) {
-        const focusLineFontSize = userConfigs.fontSize;
-        const focusLineHeight = focusLineFontSize * 1.2;
-        const focusLineMargin = focusLineFontSize * 1;
-        const otherLineFontSize = focusLineFontSize * 1;
-        const otherLineHeight = otherLineFontSize * 1.2;
-        const otherLineMargin = otherLineFontSize * 1;
-        const otherLineOpacity = 0.35;
-        const marginWidth = ctx.canvas.width * 0.075;
-        const animateDuration = userConfigs.smooth ? 0.3 : 0;
-        const hCenter = userConfigs.centerAlign;
-        const fontFamily = `${userConfigs.fontFamily}, sans-serif`;
-
-        let currentIndex = -1;
-        let progress = 1;
-        lyrics.forEach(({ startTime }, index) => {
-            if (startTime && currentTime > startTime - animateDuration) {
-                currentIndex = index;
-                if (currentTime < startTime) {
-                    progress = (currentTime - startTime + animateDuration) / animateDuration;
-                }
+            tempLine = line;
+            if (!isSpace) {
+                textMeasures = mea;
             }
-        });
-
-        if (currentIndex === -1) {
-            drawText(ctx, "");
-            return;
         }
+    }
+    if (tempLine !== "") {
+        actualWidth = Math.max(actualWidth, textMeasures.width);
+        lines.push(tempLine);
+        measures.push(ctx.measureText(tempLine));
+    }
 
-        const nextState = {
-            ...userConfigs,
-            currentIndex,
-            lyrics,
-            progress
-        };
-        if (isEqualState(nextState, renderState)) return;
-        renderState = nextState;
+    const ascent = measures.length ? measures[0].actualBoundingBoxAscent : 0;
+    const body = measures.length
+        ? options.lineHeight * (measures.length - 1)
+        : 0;
+    const descent = measures.length
+        ? measures[measures.length - 1].actualBoundingBoxDescent
+        : 0;
+    const actualHeight = ascent + body + descent;
 
-        drawBackground(ctx, userConfigs.backgroundImage);
+    let startX = 0;
+    let startY = 0;
+    let translateX = 0;
+    let translateY = 0;
+    if (options.hCenter) {
+        startX = (ctx.canvas.width - actualWidth) / 2;
+    } else {
+        startX = options.left + translateX;
+    }
 
-        const { offscreenCtx, gradient1 } = initOffscreenCtx(ctx);
-        offscreenCtx.save();
+    if (options.vCenter) {
+        startY = (ctx.canvas.height - actualHeight) / 2 + ascent;
+    } else if (options.top) {
+        startY = options.top + ascent;
+    } else if (options.bottom) {
+        startY = options.bottom - descent - body;
+    }
 
-        // focus line
-        const fFontSize = otherLineFontSize + progress * (focusLineFontSize - otherLineFontSize);
-        const fLineHeight = otherLineHeight + progress * (focusLineHeight - otherLineHeight);
-        const fLineOpacity = otherLineOpacity + progress * (1 - otherLineOpacity);
-        const otherRight = ctx.canvas.width - marginWidth - (otherLineFontSize / focusLineFontSize) * (ctx.canvas.width - 2 * marginWidth);
-        const progressRight = marginWidth + (1 - progress) * (otherRight - marginWidth);
-        offscreenCtx.fillStyle = `rgba(255, 255, 255, ${fLineOpacity})`;
-        offscreenCtx.font = `bold ${fFontSize}px ${fontFamily}`;
-        const prevLineFocusHeight = drawParagraph(offscreenCtx, lyrics[currentIndex - 1] ? lyrics[currentIndex - 1].text : "", {
+    if (typeof options.translateX === "function") {
+        translateX = options.translateX(actualWidth);
+    }
+    if (typeof options.translateX === "number") {
+        translateX = options.translateX;
+    }
+    if (typeof options.translateY === "function") {
+        translateY = options.translateY(actualHeight);
+    }
+    if (typeof options.translateY === "number") {
+        translateY = options.translateY;
+    }
+    if (!options.measure) {
+        lines.forEach((str, index) => {
+            const x = options.hCenter
+                ? (ctx.canvas.width - measures[index].width) / 2
+                : startX;
+            ctx.fillText(str, x, startY + index * options.lineHeight + translateY);
+        });
+    }
+    return {
+        width: actualWidth,
+        height: actualHeight,
+        left: startX + translateX,
+        right: ctx.canvas.width - options.left - actualWidth + translateX,
+        top: startY - ascent + translateY,
+        bottom: startY + body + descent + translateY,
+    };
+}
+
+function drawBackground(ctx, image) {
+    if (userConfigs.showCover) {
+        const { width, height } = ctx.canvas;
+        ctx.imageSmoothingEnabled = false;
+        ctx.save();
+        const blurSize = Number(userConfigs.blurSize);
+        ctx.filter = `blur(${blurSize}px)`;
+        ctx.drawImage(
+            image,
+            -blurSize * 2,
+            -blurSize * 2 - (width - height) / 2,
+            width + 4 * blurSize,
+            width + 4 * blurSize
+        );
+        ctx.restore();
+        ctx.fillStyle = "#000000b0";
+    } else {
+        ctx.save();
+        ctx.fillStyle = "#000000";
+    }
+
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.restore();
+}
+
+function drawText(ctx, text, color = "white") {
+    drawBackground(ctx, userConfigs.backgroundImage);
+    const fontSize = userConfigs.fontSize;
+    ctx.fillStyle = color;
+    ctx.font = `bold ${fontSize}px ${userConfigs.fontFamily}, sans-serif`;
+    drawParagraph(ctx, text, {
+        vCenter: true,
+        hCenter: true,
+        left: 0,
+        right: 0,
+        lineHeight: fontSize,
+    });
+    ctx.restore();
+}
+
+let offscreenCanvas;
+let offscreenCtx;
+let gradient1;
+let gradient2;
+
+function initOffscreenCtx(ctx) {
+    if (!offscreenCtx) {
+        offscreenCanvas = document.createElement("canvas");
+        offscreenCtx = offscreenCanvas.getContext("2d");
+        gradient1 = offscreenCtx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+        gradient1.addColorStop(0.08, "transparent");
+        gradient1.addColorStop(0.15, "white");
+        gradient1.addColorStop(0.85, "white");
+        gradient1.addColorStop(0.92, "transparent");
+        gradient2 = offscreenCtx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+        gradient2.addColorStop(0.0, "white");
+        gradient2.addColorStop(0.7, "white");
+        gradient2.addColorStop(0.925, "transparent");
+    }
+    offscreenCtx.canvas.width = ctx.canvas.width;
+    offscreenCtx.canvas.height = ctx.canvas.height;
+    return {
+        offscreenCtx,
+        gradient1,
+        gradient2,
+    };
+}
+
+// Avoid drawing again when the same
+// Do not operate canvas again in other functions
+let renderState;
+
+function isEqualState(state1, state2) {
+    if (!state1 || !state2) return false;
+    return Object.keys(state1).reduce((p, c) => {
+        return p && state1[c] === state2[c];
+    }, true);
+}
+
+function renderLyrics(ctx, lyrics, currentTime) {
+    const focusLineFontSize = userConfigs.fontSize;
+    const focusLineHeight = focusLineFontSize * 1.2;
+    const focusLineMargin = focusLineFontSize * 1;
+    const otherLineFontSize = focusLineFontSize * 1;
+    const otherLineHeight = otherLineFontSize * 1.2;
+    const otherLineMargin = otherLineFontSize * 1;
+    const otherLineOpacity = 0.35;
+    const marginWidth = ctx.canvas.width * 0.075;
+    const animateDuration = userConfigs.smooth ? 0.3 : 0;
+    const hCenter = userConfigs.centerAlign;
+    const fontFamily = `${userConfigs.fontFamily}, sans-serif`;
+
+    let currentIndex = -1;
+    let progress = 1;
+    lyrics.forEach(({ startTime }, index) => {
+        if (startTime && currentTime > startTime - animateDuration) {
+            currentIndex = index;
+            if (currentTime < startTime) {
+                progress =
+                    (currentTime - startTime + animateDuration) / animateDuration;
+            }
+        }
+    });
+
+    if (currentIndex === -1) {
+        drawText(ctx, "");
+        return;
+    }
+
+    const nextState = {
+        ...userConfigs,
+        currentIndex,
+        lyrics,
+        progress,
+    };
+    if (isEqualState(nextState, renderState)) return;
+    renderState = nextState;
+
+    drawBackground(ctx, userConfigs.backgroundImage);
+
+    const { offscreenCtx, gradient1 } = initOffscreenCtx(ctx);
+    offscreenCtx.save();
+
+    // focus line
+    const fFontSize =
+        otherLineFontSize + progress * (focusLineFontSize - otherLineFontSize);
+    const fLineHeight =
+        otherLineHeight + progress * (focusLineHeight - otherLineHeight);
+    const fLineOpacity = otherLineOpacity + progress * (1 - otherLineOpacity);
+    const otherRight =
+        ctx.canvas.width -
+        marginWidth -
+        (otherLineFontSize / focusLineFontSize) *
+        (ctx.canvas.width - 2 * marginWidth);
+    const progressRight =
+        marginWidth + (1 - progress) * (otherRight - marginWidth);
+    offscreenCtx.fillStyle = `rgba(255, 255, 255, ${fLineOpacity})`;
+    offscreenCtx.font = `bold ${fFontSize}px ${fontFamily}`;
+    const prevLineFocusHeight = drawParagraph(
+        offscreenCtx,
+        lyrics[currentIndex - 1] ? lyrics[currentIndex - 1].text : "",
+        {
             vCenter: true,
             hCenter,
             left: marginWidth,
             right: marginWidth,
             lineHeight: focusLineFontSize,
-            measure: true
-        }).height;
-
-        const pos = drawParagraph(offscreenCtx, lyrics[currentIndex].text, {
-            vCenter: true,
-            hCenter,
-            left: marginWidth,
-            right: progressRight,
-            lineHeight: fLineHeight,
-            translateY: selfHeight => ((prevLineFocusHeight + selfHeight) / 2 + focusLineMargin) * (1 - progress)
-        });
-        // offscreenCtx.strokeRect(pos.left, pos.top, pos.width, pos.height);
-
-        // prev line
-        let lastBeforePos = pos;
-        for (let i = 0; i < currentIndex; i++) {
-            if (i === 0) {
-                const prevProgressLineFontSize = otherLineFontSize + (1 - progress) * (focusLineFontSize - otherLineFontSize);
-                const prevProgressLineOpacity = otherLineOpacity + (1 - progress) * (1 - otherLineOpacity);
-                offscreenCtx.fillStyle = `rgba(255, 255, 255, ${prevProgressLineOpacity})`;
-                offscreenCtx.font = `bold ${prevProgressLineFontSize}px ${fontFamily}`;
-            } else {
-                offscreenCtx.fillStyle = `rgba(255, 255, 255, ${otherLineOpacity})`;
-                offscreenCtx.font = `bold ${otherLineFontSize}px ${fontFamily}`;
-            }
-            lastBeforePos = drawParagraph(offscreenCtx, lyrics[currentIndex - 1 - i].text, {
-                hCenter,
-                bottom: i === 0 ? lastBeforePos.top - focusLineMargin : lastBeforePos.top - otherLineMargin,
-                left: marginWidth,
-                right: i === 0 ? marginWidth + progress * (otherRight - marginWidth) : otherRight,
-                lineHeight: i === 0 ? otherLineHeight + (1 - progress) * (focusLineHeight - otherLineHeight) : otherLineHeight
-            });
-            if (lastBeforePos.top < 0) break;
+            measure: true,
         }
-        // next line
-        offscreenCtx.fillStyle = `rgba(255, 255, 255, ${otherLineOpacity})`;
-        offscreenCtx.font = `bold ${otherLineFontSize}px ${fontFamily}`;
-        let lastAfterPos = pos;
-        for (let i = currentIndex + 1; i < lyrics.length; i++) {
-            lastAfterPos = drawParagraph(offscreenCtx, lyrics[i].text, {
-                hCenter,
-                top: i === currentIndex + 1 ? lastAfterPos.bottom + focusLineMargin : lastAfterPos.bottom + otherLineMargin,
-                left: marginWidth,
-                right: otherRight,
-                lineHeight: otherLineHeight
-            });
-            if (lastAfterPos.bottom > ctx.canvas.height) break;
-        }
+    ).height;
 
-        offscreenCtx.globalCompositeOperation = "source-in";
-        offscreenCtx.fillStyle = gradient1;
-        offscreenCtx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        offscreenCtx.restore();
-        ctx.drawImage(offscreenCtx.canvas, 0, 0);
+    const pos = drawParagraph(offscreenCtx, lyrics[currentIndex].text, {
+        vCenter: true,
+        hCenter,
+        left: marginWidth,
+        right: progressRight,
+        lineHeight: fLineHeight,
+        translateY: (selfHeight) =>
+        ((prevLineFocusHeight + selfHeight) / 2 + focusLineMargin) *
+        (1 - progress),
+    });
+    // offscreenCtx.strokeRect(pos.left, pos.top, pos.width, pos.height);
 
-        ctx.restore();
-    }
-
-    let workerIsRunning = null;
-    let timeout = null;
-
-    async function tick(options) {
-        if (!lyricVideoIsOpen) {
-            return;
-        }
-
-        if (timeout) clearTimeout(timeout);
-
-        const audio = {
-            currentTime: (Player.getProgress() - Number(options.delay)) / 1000,
-            duration: Player.getDuration() / 1000
-        };
-
-        const { error, lyrics } = sharedData;
-
-        if (error) {
-            if (error === "Instrumental") {
-                drawText(lyricCtx, error);
-            } else {
-                drawText(lyricCtx, error);
-            }
-        } else if (!lyrics) {
-            drawText(lyricCtx, "No lyrics");
-        } else if (audio.duration && lyrics.length) {
-            renderLyrics(lyricCtx, lyrics, audio.currentTime);
-        } else if (!audio.duration || lyrics.length === 0) {
-            drawText(lyricCtx, audio.currentSrc ? "Loading" : "Waiting");
-        }
-
-        if (!lyrics?.length) {
-            timeout = setTimeout(tick, 1000, options);
-            return;
-        }
-
-        if (document.hidden) {
-            if (!workerIsRunning) {
-                worker.postMessage("popup-lyric-request-update");
-                workerIsRunning = true;
-            }
+    // prev line
+    let lastBeforePos = pos;
+    for (let i = 0; i < currentIndex; i++) {
+        if (i === 0) {
+            const prevProgressLineFontSize =
+                otherLineFontSize +
+                (1 - progress) * (focusLineFontSize - otherLineFontSize);
+            const prevProgressLineOpacity =
+                otherLineOpacity + (1 - progress) * (1 - otherLineOpacity);
+            offscreenCtx.fillStyle = `rgba(255, 255, 255, ${prevProgressLineOpacity})`;
+            offscreenCtx.font = `bold ${prevProgressLineFontSize}px ${fontFamily}`;
         } else {
-            if (workerIsRunning) {
-                worker.postMessage("popup-lyric-stop-update");
-                workerIsRunning = false;
-            }
-
-            requestAnimationFrame(() => tick(options));
+            offscreenCtx.fillStyle = `rgba(255, 255, 255, ${otherLineOpacity})`;
+            offscreenCtx.font = `bold ${otherLineFontSize}px ${fontFamily}`;
         }
+        lastBeforePos = drawParagraph(
+            offscreenCtx,
+            lyrics[currentIndex - 1 - i].text,
+            {
+                hCenter,
+                bottom:
+                i === 0
+                ? lastBeforePos.top - focusLineMargin
+                : lastBeforePos.top - otherLineMargin,
+                left: marginWidth,
+                right:
+                i === 0
+                ? marginWidth + progress * (otherRight - marginWidth)
+                : otherRight,
+                lineHeight:
+                i === 0
+                ? otherLineHeight +
+                (1 - progress) * (focusLineHeight - otherLineHeight)
+                : otherLineHeight,
+            }
+        );
+        if (lastBeforePos.top < 0) break;
+    }
+    // next line
+    offscreenCtx.fillStyle = `rgba(255, 255, 255, ${otherLineOpacity})`;
+    offscreenCtx.font = `bold ${otherLineFontSize}px ${fontFamily}`;
+    let lastAfterPos = pos;
+    for (let i = currentIndex + 1; i < lyrics.length; i++) {
+        lastAfterPos = drawParagraph(offscreenCtx, lyrics[i].text, {
+            hCenter,
+            top:
+            i === currentIndex + 1
+            ? lastAfterPos.bottom + focusLineMargin
+            : lastAfterPos.bottom + otherLineMargin,
+            left: marginWidth,
+            right: otherRight,
+            lineHeight: otherLineHeight,
+        });
+        if (lastAfterPos.bottom > ctx.canvas.height) break;
     }
 
-    function boolLocalStorage(name, defaultVal = true) {
-        const value = LocalStorage.get(name);
-        return value ? value === "true" : defaultVal;
+    offscreenCtx.globalCompositeOperation = "source-in";
+    offscreenCtx.fillStyle = gradient1;
+    offscreenCtx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    offscreenCtx.restore();
+    ctx.drawImage(offscreenCtx.canvas, 0, 0);
+
+    ctx.restore();
+}
+
+let workerIsRunning = null;
+let timeout = null;
+
+async function tick(options) {
+    if (!lyricVideoIsOpen) {
+        return;
     }
 
-    let configContainer;
+    if (timeout) clearTimeout(timeout);
 
-    function openConfig(event) {
-        event.preventDefault();
-        if (!configContainer) {
-            configContainer = document.createElement("div");
-            configContainer.id = "popup-config-container";
-            const style = document.createElement("style");
-            style.innerHTML = `
+    const audio = {
+        currentTime: (Player.getProgress() - Number(options.delay)) / 1000,
+        duration: Player.getDuration() / 1000,
+    };
+
+    const { error, lyrics } = sharedData;
+
+    if (error) {
+        if (error === "Instrumental") {
+            drawText(lyricCtx, error);
+        } else {
+            drawText(lyricCtx, error);
+        }
+    } else if (!lyrics) {
+        drawText(lyricCtx, "No lyrics");
+    } else if (audio.duration && lyrics.length) {
+        renderLyrics(lyricCtx, lyrics, audio.currentTime);
+    } else if (!audio.duration || lyrics.length === 0) {
+        drawText(lyricCtx, audio.currentSrc ? "Loading" : "Waiting");
+    }
+
+    if (!lyrics?.length) {
+        timeout = setTimeout(tick, 1000, options);
+        return;
+    }
+
+    if (document.hidden) {
+        if (!workerIsRunning) {
+            worker.postMessage("popup-lyric-request-update");
+            workerIsRunning = true;
+        }
+    } else {
+        if (workerIsRunning) {
+            worker.postMessage("popup-lyric-stop-update");
+            workerIsRunning = false;
+        }
+
+        requestAnimationFrame(() => tick(options));
+    }
+}
+
+function boolLocalStorage(name, defaultVal = true) {
+    const value = LocalStorage.get(name);
+    return value ? value === "true" : defaultVal;
+}
+
+let configContainer;
+
+function openConfig(event) {
+    event.preventDefault();
+    if (!configContainer) {
+        configContainer = document.createElement("div");
+        configContainer.id = "popup-config-container";
+        const style = document.createElement("style");
+        style.innerHTML = `
 .setting-row::after {
     content: "";
     display: table;
@@ -1327,35 +1517,56 @@ button.switch.small {
     color: var(--spice-text);
 }
 `;
-            const optionHeader = document.createElement("h2");
-            optionHeader.innerText = "Options";
-            const smooth = createSlider("Smooth scrolling", userConfigs.smooth, state => {
+        const optionHeader = document.createElement("h2");
+        optionHeader.innerText = "Options";
+        const smooth = createSlider(
+            "Smooth scrolling",
+            userConfigs.smooth,
+            (state) => {
                 userConfigs.smooth = state;
                 LocalStorage.set("popup-lyrics:smooth", String(state));
-            });
-            const center = createSlider("Center align", userConfigs.centerAlign, state => {
+            }
+        );
+        const center = createSlider(
+            "Center align",
+            userConfigs.centerAlign,
+            (state) => {
                 userConfigs.centerAlign = state;
                 LocalStorage.set("popup-lyrics:center-align", String(state));
-            });
-            const cover = createSlider("Show cover", userConfigs.showCover, state => {
+            }
+        );
+        const cover = createSlider(
+            "Show cover",
+            userConfigs.showCover,
+            (state) => {
                 userConfigs.showCover = state;
                 LocalStorage.set("popup-lyrics:show-cover", String(state));
-            });
+            }
+        );
 
-            const translation2 = createOptions("Language to translate into",
-                {
-                    0: "None",
-                    1: "English (Google)",
-                    2: "Chinese (NeteaseCN)",
-                    3: "Romaji (Kuroshiro for Japanese)",
-                    4: "Chinese Pinyin (Tiny Pinyin for Chinese)",
-                    5: "Romanja (Aromanize for Korean)"
-                }, userConfigs.translation2rd, state => {
-                    userConfigs.translation2rd = state;
-                    LocalStorage.set("popup-lyrics:translation-2rd", state);
-                    updateTrack();
-                }, true);
-            const ratio = createOptions("Aspect ratio", { 11: "1:1", 43: "4:3", 169: "16:9" }, userConfigs.ratio, state => {
+        const translation2 = createOptions(
+            "Language to translate into",
+            {
+                0: "None",
+                1: "English (Google)",
+                2: "Chinese (NeteaseCN)",
+                3: "Romaji (Kuroshiro for Japanese)",
+                4: "Chinese Pinyin (Pinyin Pro for Chinese)",
+                5: "Romanja (Aromanize for Korean)",
+            },
+            userConfigs.translation2rd,
+            (state) => {
+                userConfigs.translation2rd = state;
+                LocalStorage.set("popup-lyrics:translation-2rd", state);
+                updateTrack();
+            },
+            true
+        );
+        const ratio = createOptions(
+            "Aspect ratio",
+            { 11: "1:1", 43: "4:3", 169: "16:9" },
+            userConfigs.ratio,
+            (state) => {
                 userConfigs.ratio = state;
                 LocalStorage.set("popup-lyrics:ratio", state);
                 let value = lyricVideo.width;
@@ -1372,115 +1583,142 @@ button.switch.small {
                 }
                 lyricVideo.height = lyricCanvas.height = value;
                 offscreenCtx = null;
-            });
-            const fontSize = createOptions(
-                "Font size",
-                {
-                    30: "30px",
-                    34: "34px",
-                    38: "38px",
-                    42: "42px",
-                    46: "46px",
-                    50: "50px",
-                    54: "54px",
-                    58: "58px"
-                },
-                String(userConfigs.fontSize),
-                state => {
-                    userConfigs.fontSize = Number(state);
-                    LocalStorage.set("popup-lyrics:font-size", state);
-                }
-            );
-            const blurSize = createOptions(
-                "Blur size",
-                {
-                    2: "2px",
-                    5: "5px",
-                    10: "10px",
-                    15: "15px"
-                },
-                String(userConfigs.blurSize),
-                state => {
-                    userConfigs.blurSize = Number(state);
-                    LocalStorage.set("popup-lyrics:blur-size", state);
-                }
-            );
-            const delay = createOptionsInput("Delay", String(userConfigs.delay), state => {
+            }
+        );
+        const fontSize = createOptions(
+            "Font size",
+            {
+                30: "30px",
+                34: "34px",
+                38: "38px",
+                42: "42px",
+                46: "46px",
+                50: "50px",
+                54: "54px",
+                58: "58px",
+            },
+            String(userConfigs.fontSize),
+            (state) => {
+                userConfigs.fontSize = Number(state);
+                LocalStorage.set("popup-lyrics:font-size", state);
+            }
+        );
+        const blurSize = createOptions(
+            "Blur size",
+            {
+                2: "2px",
+                5: "5px",
+                10: "10px",
+                15: "15px",
+            },
+            String(userConfigs.blurSize),
+            (state) => {
+                userConfigs.blurSize = Number(state);
+                LocalStorage.set("popup-lyrics:blur-size", state);
+            }
+        );
+        const delay = createOptionsInput(
+            "Delay",
+            String(userConfigs.delay),
+            (state) => {
                 userConfigs.delay = Number(state);
                 LocalStorage.set("popup-lyrics:delay", state);
+            }
+        );
+
+        const serviceHeader = document.createElement("h2");
+        serviceHeader.innerText = "Services";
+
+        const serviceContainer = document.createElement("div");
+
+        function stackServiceElements() {
+            userConfigs.servicesOrder.forEach((name, index) => {
+                const el = userConfigs.services[name].element;
+
+                const [up, down] = el.querySelectorAll("button");
+                if (index === 0) {
+                    up.disabled = true;
+                    down.disabled = false;
+                } else if (index === userConfigs.servicesOrder.length - 1) {
+                    up.disabled = false;
+                    down.disabled = true;
+                } else {
+                    up.disabled = false;
+                    down.disabled = false;
+                }
+
+                serviceContainer.append(el);
             });
-
-            const serviceHeader = document.createElement("h2");
-            serviceHeader.innerText = "Services";
-
-            const serviceContainer = document.createElement("div");
-
-            function stackServiceElements() {
-                userConfigs.servicesOrder.forEach((name, index) => {
-                    const el = userConfigs.services[name].element;
-
-                    const [up, down] = el.querySelectorAll("button");
-                    if (index === 0) {
-                        up.disabled = true;
-                        down.disabled = false;
-                    } else if (index === userConfigs.servicesOrder.length - 1) {
-                        up.disabled = false;
-                        down.disabled = true;
-                    } else {
-                        up.disabled = false;
-                        down.disabled = false;
-                    }
-
-                    serviceContainer.append(el);
-                });
-            }
-
-            function switchCallback(el, state) {
-                const id = el.dataset.id;
-                userConfigs.services[id].on = state;
-                LocalStorage.set(`popup-lyrics:services:${id}:on`, state);
-                updateTrack();
-            }
-
-            function posCallback(el, dir) {
-                const id = el.dataset.id;
-                const curPos = userConfigs.servicesOrder.findIndex(val => val === id);
-                const newPos = curPos + dir;
-
-                const temp = userConfigs.servicesOrder[newPos];
-                userConfigs.servicesOrder[newPos] = userConfigs.servicesOrder[curPos];
-                userConfigs.servicesOrder[curPos] = temp;
-
-                LocalStorage.set("popup-lyrics:services-order", JSON.stringify(userConfigs.servicesOrder));
-
-                stackServiceElements();
-                updateTrack();
-            }
-
-            function tokenChangeCallback(el, inputEl) {
-                const newVal = inputEl.value;
-                const id = el.dataset.id;
-                userConfigs.services[id].token = newVal;
-                LocalStorage.set(`popup-lyrics:services:${id}:token`, newVal);
-                updateTrack();
-            }
-
-            for (const name of userConfigs.servicesOrder) {
-                userConfigs.services[name].element = createServiceOption(name, userConfigs.services[name], switchCallback, posCallback, tokenChangeCallback);
-            }
-            stackServiceElements();
-
-            configContainer.append(style, optionHeader, smooth, center, cover, translation2, blurSize, fontSize, ratio, delay, serviceHeader, serviceContainer);
         }
-        Spicetify.PopupModal.display({
-            title: "Popup Lyrics Plus",
-            content: configContainer
-        });
-    }
 
-    function createSlider(name, defaultVal, callback) {
-        const container = document.createElement("div");
-        container.innerHTML = `
+        function switchCallback(el, state) {
+            const id = el.dataset.id;
+            userConfigs.services[id].on = state;
+            LocalStorage.set(`popup-lyrics:services:${id}:on`, state);
+            updateTrack();
+        }
+
+        function posCallback(el, dir) {
+            const id = el.dataset.id;
+            const curPos = userConfigs.servicesOrder.findIndex((val) => val === id);
+            const newPos = curPos + dir;
+
+            const temp = userConfigs.servicesOrder[newPos];
+            userConfigs.servicesOrder[newPos] = userConfigs.servicesOrder[curPos];
+            userConfigs.servicesOrder[curPos] = temp;
+
+            LocalStorage.set(
+                "popup-lyrics:services-order",
+                JSON.stringify(userConfigs.servicesOrder)
+            );
+
+            stackServiceElements();
+            updateTrack();
+        }
+
+        function tokenChangeCallback(el, inputEl) {
+            const newVal = inputEl.value;
+            const id = el.dataset.id;
+            userConfigs.services[id].token = newVal;
+            LocalStorage.set(`popup-lyrics:services:${id}:token`, newVal);
+            updateTrack();
+        }
+
+        for (const name of userConfigs.servicesOrder) {
+            userConfigs.services[name].element = createServiceOption(
+                name,
+                userConfigs.services[name],
+                switchCallback,
+                posCallback,
+                tokenChangeCallback
+            );
+        }
+        stackServiceElements();
+
+        configContainer.append(
+            style,
+            optionHeader,
+            smooth,
+            center,
+            cover,
+            translation2,
+            blurSize,
+            fontSize,
+            ratio,
+            delay,
+            serviceHeader,
+            serviceContainer
+        );
+    }
+    Spicetify.PopupModal.display({
+        title: "Popup Lyrics Plus",
+        content: configContainer,
+    });
+}
+
+function createSlider(name, defaultVal, callback) {
+    const container = document.createElement("div");
+    container.innerHTML = `
 <div class="setting-row">
     <label class="col description">${name}</label>
     <div class="col action"><button class="switch">
@@ -1490,46 +1728,46 @@ button.switch.small {
     </button></div>
 </div>`;
 
-        const slider = container.querySelector("button");
-        slider.classList.toggle("disabled", !defaultVal);
+    const slider = container.querySelector("button");
+    slider.classList.toggle("disabled", !defaultVal);
 
-        slider.onclick = () => {
-            const state = slider.classList.contains("disabled");
-            slider.classList.toggle("disabled");
-            callback(state);
-        };
+    slider.onclick = () => {
+        const state = slider.classList.contains("disabled");
+        slider.classList.toggle("disabled");
+        callback(state);
+    };
 
-        return container;
-    }
-    function createOptions(name, options, defaultValue, callback) {
-        const container = document.createElement("div");
-        container.innerHTML = `
+    return container;
+}
+function createOptions(name, options, defaultValue, callback) {
+    const container = document.createElement("div");
+    container.innerHTML = `
 <div class="setting-row">
     <label class="col description">${name}</label>
     <div class="col action">
         <select>
             ${Object.keys(options)
-                .map(
-                    item => `
+                    .map(
+                        (item) => `
                 <option value="${item}" dir="auto">${options[item]}</option>
             `
-                )
-                .join("\n")}
+                    )
+                    .join("\n")}
         </select>
     </div>
 </div>`;
 
-        const select = container.querySelector("select");
-        select.value = defaultValue;
-        select.onchange = e => {
-            callback(e.target.value);
-        };
+    const select = container.querySelector("select");
+    select.value = defaultValue;
+    select.onchange = (e) => {
+        callback(e.target.value);
+    };
 
-        return container;
-    }
-    function createOptionsInput(name, defaultValue, callback) {
-        const container = document.createElement("div");
-        container.innerHTML = `
+    return container;
+}
+function createOptionsInput(name, defaultValue, callback) {
+    const container = document.createElement("div");
+    container.innerHTML = `
     <div class="setting-row">
     <label class="col description">${name}</label>
     <div class="col action">
@@ -1540,21 +1778,27 @@ button.switch.small {
     </div>
     </div>`;
 
-        const input = container.querySelector("#popup-lyrics-delay-input");
-        input.value = defaultValue;
-        input.onchange = e => {
-            callback(e.target.value);
-        };
+    const input = container.querySelector("#popup-lyrics-delay-input");
+    input.value = defaultValue;
+    input.onchange = (e) => {
+        callback(e.target.value);
+    };
 
-        return container;
-    }
+    return container;
+}
 
-    function createServiceOption(id, defaultVal, switchCallback, posCallback, tokenCallback) {
-        const name = id.replace(/^./, c => c.toUpperCase());
+function createServiceOption(
+    id,
+    defaultVal,
+    switchCallback,
+    posCallback,
+    tokenCallback
+) {
+    const name = id.replace(/^./, (c) => c.toUpperCase());
 
-        const container = document.createElement("div");
-        container.dataset.id = id;
-        container.innerHTML = `
+    const container = document.createElement("div");
+    container.dataset.id = id;
+    container.innerHTML = `
 <div class="setting-row">
     <h3 class="col description">${name}</h3>
     <div class="col action">
@@ -1577,26 +1821,26 @@ button.switch.small {
 </div>
 <span>${defaultVal.desc}</span>`;
 
-        if (defaultVal.token !== undefined) {
-            const input = document.createElement("input");
-            input.placeholder = `Place your ${id} token here`;
-            input.value = defaultVal.token;
-            input.onchange = () => tokenCallback(container, input);
-            container.append(input);
-        }
-
-        const [up, down, slider] = container.querySelectorAll("button");
-
-        slider.classList.toggle("disabled", !defaultVal.on);
-        slider.onclick = () => {
-            const state = slider.classList.contains("disabled");
-            slider.classList.toggle("disabled");
-            switchCallback(container, state);
-        };
-
-        up.onclick = () => posCallback(container, -1);
-        down.onclick = () => posCallback(container, 1);
-
-        return container;
+    if (defaultVal.token !== undefined) {
+        const input = document.createElement("input");
+        input.placeholder = `Place your ${id} token here`;
+        input.value = defaultVal.token;
+        input.onchange = () => tokenCallback(container, input);
+        container.append(input);
     }
+
+    const [up, down, slider] = container.querySelectorAll("button");
+
+    slider.classList.toggle("disabled", !defaultVal.on);
+    slider.onclick = () => {
+        const state = slider.classList.contains("disabled");
+        slider.classList.toggle("disabled");
+        switchCallback(container, state);
+    };
+
+    up.onclick = () => posCallback(container, -1);
+    down.onclick = () => posCallback(container, 1);
+
+    return container;
+}
 }
