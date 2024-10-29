@@ -80,7 +80,7 @@ Download [popupLyricsPlus.js](https://github.com/Patrick-orz/PopupLyrics-Plus/bl
 Spicetify paths are below.
 |Platform|Path|
 ---------|-----
-|Windows|%appdata%\spicetify\|
+|Windows|%appdata%\spicetify|
 |Linux/MacOS|~/.config/spicetify|
 
 Push extension into Spicetify and apply
