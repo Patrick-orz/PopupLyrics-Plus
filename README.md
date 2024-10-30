@@ -17,7 +17,7 @@
 
 *Original*
 
-<img width="682" alt="Screen Shot 2024-04-20 at 11 44 41 PM" src="https://github.com/Patrick-orz/PopupLyrics-Plus/assets/132706084/bcabf2fb-c18d-4a87-aed6-1997bca08e4f">
+![image](https://github.com/user-attachments/assets/b36e4753-96af-4066-9710-2ca1acb6c892)
 
 *Chinese PinYin translation*
 
