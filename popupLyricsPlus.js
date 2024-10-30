@@ -694,7 +694,6 @@ function PopupLyrics() {
 
             return { lyrics };
         },
-<<<<<<< HEAD
 
         async fetchLrclib(info) {
             const baseURL = "https://lrclib.net/api/get";
@@ -742,8 +741,6 @@ function PopupLyrics() {
             });
             return { lyrics };
         },
-=======
->>>>>>> 7f89561f176927598d8d3f456e6a4c0ce051ff31
     };
 
     const userConfigs = {
@@ -779,16 +776,13 @@ function PopupLyrics() {
             spotify: {
                 on: boolLocalStorage("popup-lyrics:services:spotify:on"),
                 call: LyricProviders.fetchSpotify,
-<<<<<<< HEAD
                 desc: "Lyrics sourced from official Spotify API."
             },
             lrclib: {
                 on: boolLocalStorage("popup-lyrics:services:lrclib:on"),
                 call: LyricProviders.fetchLrclib,
                 desc: "Lyrics sourced from lrclib.net. Supports both synced and unsynced lyrics. LRCLIB is a free and open-source lyrics provider.",
-=======
                 desc: "Lyrics sourced from official Spotify API.",
->>>>>>> 7f89561f176927598d8d3f456e6a4c0ce051ff31
             },
         },
         servicesOrder: [],
