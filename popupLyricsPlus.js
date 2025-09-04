@@ -19,6 +19,7 @@ if (!navigator.serviceWorker) {
             num = setInterval(() => postMessage("popup-lyric-update-ui"), 16.66);
         } else if (event.data === "popup-lyric-stop-update") {
             clearInterval(num);
+			postMessage("popup-lyric-update-ui");
             num = null;
         }
     };
@@ -40,6 +41,21 @@ function PopupLyrics() {
             tick(userConfigs);
         }
     };
+
+	let workerIsRunning = null;
+	document.addEventListener("visibilitychange", (e) => {
+		if (e.target.hidden) {
+			if (!workerIsRunning) {
+				worker.postMessage("popup-lyric-request-update");
+				workerIsRunning = true;
+			}
+		} else {
+			if (workerIsRunning) {
+				worker.postMessage("popup-lyric-stop-update");
+				workerIsRunning = false;
+			}
+		}
+	});
 
     /* TRANSLATOR */
     const kuroshiroPath =
@@ -920,7 +936,7 @@ function PopupLyrics() {
 
             try {
                 const data = await service.call(info);
-                console.log(data);
+                //console.log(data);
 
                 let dataStr;
 
@@ -1389,7 +1405,6 @@ function renderLyrics(ctx, lyrics, currentTime) {
     ctx.restore();
 }
 
-let workerIsRunning = null;
 let timeout = null;
 
 async function tick(options) {
@@ -1425,17 +1440,17 @@ async function tick(options) {
         return;
     }
 
-    if (document.hidden) {
-        if (!workerIsRunning) {
-            worker.postMessage("popup-lyric-request-update");
-            workerIsRunning = true;
-        }
-    } else {
-        if (workerIsRunning) {
-            worker.postMessage("popup-lyric-stop-update");
-            workerIsRunning = false;
-        }
-
+    if (!document.hidden) {
+    //    if (!workerIsRunning) {
+    //        worker.postMessage("popup-lyric-request-update");
+    //        workerIsRunning = true;
+    //    }
+    //} else {
+    //    if (workerIsRunning) {
+    //        worker.postMessage("popup-lyric-stop-update");
+    //        workerIsRunning = false;
+    //    }
+    //
         requestAnimationFrame(() => tick(options));
     }
 }
@@ -1501,7 +1516,6 @@ button.switch.small {
 }
 #popup-config-container input {
     width: 100%;
-    margin-top: 10px;
     padding: 0 5px;
     height: 32px;
     border: 0;
